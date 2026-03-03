@@ -2,6 +2,10 @@
 
 **Artificial Intelligence was used to create documentation and to automate testing with test folders.**
 
+**Artificial Intelligence was also used to create comments and guides inside code to help contributors understand.**
+
+**I used Artificial Intelligence to learn how to program, but did not source any code from it.**
+
 **Status**: ✅ **FULLY OPERATIONAL**
 
 A high-performance, multi-pathway programming language with AOT, JIT, Interpreter, and VM execution modes.
