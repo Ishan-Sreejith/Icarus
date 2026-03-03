@@ -1,0 +1,73 @@
+# CoRe Language Syntax Definition
+# This file defines the token mappings for the CoRe compiler
+# You can modify this file and reload it with: forge --in
+# Note: `say:` and `ask:` are tokenized as `say`/`ask` plus a separate `:` token
+
+{
+  "keywords": {
+    "use": "use",
+    "and": "and",
+    "upd": "upd",
+    "or": "or",
+    "if": "if",
+    "false": "false",
+    "say": "say",
+    "else": "else",
+    "true": "true",
+    "for": "for",
+    "in": "in",
+    "fn": "fn",
+    "catch": "catch",
+    "return": "return",
+    "mod": "mod",
+    "not": "not",
+    "async": "async",
+    "init": "init",
+    "fng": "fng",
+    "struct": "struct",
+    "try": "try",
+    "await": "await",
+    "while": "while",
+    "ask": "ask",
+    "import": "import",
+    "var": "var"
+  },
+  "operators": {
+    "|": "|",
+    "/": "/",
+    "]": "]",
+    "-": "-",
+    "}": "}",
+    "&": "&",
+    "{": "{",
+    "ask:": "ask:",
+    ".": ".",
+    ">>": ">>",
+    "<<": "<<",
+    "==": "==",
+    "^": "^",
+    "=": "=",
+    "<": "<",
+    "say:": "say:",
+    "*": "*",
+    ">": ">",
+    "..": "..",
+    ";": ";",
+    "+": "+",
+    "[": "[",
+    "!=": "!=",
+    ",": ",",
+    ")": ")",
+    "~": "~",
+    "(": "(",
+    ":": ":"
+  },
+  "token_descriptions": {
+    "var": "Variable declaration keyword",
+    "while": "Looping construct",
+    "say": "Print statement anchor (used as `say:`)",
+    "fn": "Function definition keyword",
+    "if": "Conditional branching",
+    "ask": "Input statement anchor (used as `ask:`)"
+  }
+}

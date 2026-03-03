@@ -1,0 +1,31 @@
+// CoRe Language - Simple Working Example
+// This version works with current interpreter and AOT compiler
+
+fn system_log: msg {
+    say: msg
+}
+
+fn startup {
+    system_log: "App started"
+}
+
+fn calculate: x, y {
+    var result: x + y
+    return result
+}
+
+// Main execution
+startup
+
+var sum: calculate: 10, 20
+say: "Result:"
+say: sum
+
+var x: 5
+var y: 7
+var prod: x * y
+say: "Product:"
+say: prod
+
+say: "Done"
+

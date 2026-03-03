@@ -1,0 +1,15 @@
+// If/else example
+var x: 42
+
+if x > 40 {
+    say: "x is greater than 40"
+} else {
+    say: "x is not greater than 40"
+}
+
+var y: 10
+if y < 5 {
+    say: "y is small"
+} else {
+    say: "y is not small"
+}

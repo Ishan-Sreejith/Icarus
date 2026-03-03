@@ -1,0 +1,5 @@
+fn get_number {
+    return 42
+}
+var x: get_number
+say: x

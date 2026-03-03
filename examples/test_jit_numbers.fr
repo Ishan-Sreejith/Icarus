@@ -1,0 +1,8 @@
+var x: 5
+var y: 7
+var sum: x + y
+var diff: y - x
+var prod: x * y
+say: sum
+say: diff
+say: prod

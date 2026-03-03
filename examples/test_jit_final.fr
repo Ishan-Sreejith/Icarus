@@ -1,0 +1,35 @@
+// Test all JIT features
+
+// 1. Floats
+var f1: 1.5
+var f2: 2.5
+var f3: f1 + f2
+say: f3
+
+// 2. Lists
+var l: [10, 20, 30]
+say: l[1]
+l[1] = 99
+say: l
+
+// 3. Maps/Structs
+struct Point { x, y }
+var p: Point
+p.x = 100
+p.y = 200
+say: p.x
+
+// 4. File I/O (mock)
+// var f: open("test.txt")
+// close(f)
+
+// 5. Functions & GC
+fn make_point: a, b {
+    var pt: Point
+    pt.x = a
+    pt.y = b
+    return pt
+}
+
+var p2: make_point: 5, 6
+say: p2.y

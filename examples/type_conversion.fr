@@ -1,0 +1,19 @@
+// type conversion helpers
+
+var n: 42
+var s: str: n
+say: s
+
+var parsed: num: "123"
+say: parsed
+
+var b1: bool: 0
+var b2: bool: 10
+say: b1
+say: b2
+
+say: type: n
+say: type: s
+say: type: [1, 2, 3]
+say: type: { "k": 1 }
+

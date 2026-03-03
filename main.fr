@@ -1,0 +1,21 @@
+say: "=== CoRe Language Test ==="
+var a: 10
+var b: 20
+var name: "Alice"
+say: a
+say: b
+say: name
+var sum: a + b
+var diff: b - a
+var prod: a * 2
+say: sum
+say: diff
+say: prod
+if a < b {
+    say: "a is less than b"
+}
+if b > a {
+    say: "b is greater than a"
+}
+var greeting: "Hello " + name
+say: greeting

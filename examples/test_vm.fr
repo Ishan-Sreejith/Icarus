@@ -1,0 +1,5 @@
+say: "Test 1 - VM mode"
+var x: 10
+var y: 20
+say: x + y
+

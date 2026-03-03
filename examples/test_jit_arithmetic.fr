@@ -1,0 +1,8 @@
+// JIT Compiler Test Program
+// Tests all phases of the JIT implementation
+
+var a: 10
+var b: 32
+var c: a + b
+say: c
+

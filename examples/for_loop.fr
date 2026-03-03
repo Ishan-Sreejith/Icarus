@@ -1,0 +1,11 @@
+// For loop example
+say: "Counting from 0 to 5:"
+for i in 0..5 {
+    say: i
+}
+
+say: "Counting from 10 to 15:"
+for n in 10..15 {
+    var double: n * 2
+    say: double
+}

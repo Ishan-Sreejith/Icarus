@@ -1,0 +1,33 @@
+// Async function demonstration
+async fn fetch_data: url {
+    say: "Fetching from: "
+    say: url
+    sleep: 5
+    return 42
+}
+
+// Await an async function (works in all modes; only `-r` is truly concurrent)
+var result: await fetch_data: "https://example.com"
+say: "Got result: "
+say: result
+
+// Multiple async operations
+async fn task1: {
+    sleep: 5
+    say: "Task 1 done"
+    return 1
+}
+
+async fn task2: {
+    sleep: 5
+    say: "Task 2 done"
+    return 2
+}
+
+var t1: spawn: task1:
+var t2: spawn: task2:
+var r1: await t1
+var r2: await t2
+
+say: "All tasks completed"
+say: r1 + r2

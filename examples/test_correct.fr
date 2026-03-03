@@ -1,0 +1,4 @@
+say: "Hello, World!"
+var: x 10
+var: y 20
+say: x + y

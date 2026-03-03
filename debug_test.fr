@@ -1,0 +1,5 @@
+say: "First string"
+say: "Second string" 
+var x: 5
+var y: 3
+say: x + y

@@ -1,0 +1,11 @@
+var s: "Hello JIT"
+say: s
+
+var n: 123
+var sn: str(n)
+say: sn
+
+var ns: "456"
+var nn: num(ns)
+var res: nn + 1
+say: res

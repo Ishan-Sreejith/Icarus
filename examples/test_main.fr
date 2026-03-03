@@ -1,0 +1,23 @@
+// Main CoRe File for Metroman Testing
+import "test_plugin.mtro"
+
+say: "→ Starting Metroman Import Test"
+
+// Test function call from plugin
+var success: metroman-test-plugin: "Ishan"
+
+if success == 1 {
+    say: "✓ Plugin function call returned successfully"
+}
+
+// Test another function from plugin
+var math_result: calculate-extra: 5, 4
+say: "→ Math result from plugin (5 * 4 + 10): "
+say: math_result
+
+if math_result == 30 {
+    say: "✓ Plugin math test passed"
+}
+ask: "What is your name? "
+
+say: "→ Metroman Test Project Finished"

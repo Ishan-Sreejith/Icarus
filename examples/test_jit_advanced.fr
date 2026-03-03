@@ -1,0 +1,13 @@
+fng global_add: a, b {
+    return a + b
+}
+
+fnc fast_mul: x, y {
+    return x * y
+}
+
+var sum: global_add: 10, 20
+say: sum
+
+var prod: fast_mul: 5, 6
+say: prod

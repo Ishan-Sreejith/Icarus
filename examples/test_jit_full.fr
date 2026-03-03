@@ -1,0 +1,17 @@
+var s: "Hello"
+var n: 10
+say: s
+say: n
+
+var l: [1, 2, 3]
+say: l
+
+var m: { "a": 100, "b": 200 }
+say: m
+say: m["a"]
+
+var k: keys(m)
+say: k
+
+var sn: str(n)
+say: sn

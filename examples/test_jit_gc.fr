@@ -1,0 +1,12 @@
+fn make_list: x {
+    var l: [x, x, x]
+    return l
+}
+
+var i: 0
+while i < 1000 {
+    var l: make_list: i
+    var i: i + 1
+}
+
+say: "GC Test Complete"

@@ -1,0 +1,12 @@
+[package]
+name = "arm64vm"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+rustyline = "13.0"
+colored = "2.1"
+
+[[bin]]
+name = "arm64vm"
+path = "src/main.rs"

@@ -1,0 +1,6 @@
+fn add_five: x {
+    var result: x + 5
+    return result
+}
+var y: add_five: 10
+say: y

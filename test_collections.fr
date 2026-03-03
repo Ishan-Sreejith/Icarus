@@ -1,0 +1,4 @@
+var myMap: {"name": "John", "age": 30}
+var myList: [1, 2, 3, 4, 5]
+say: myMap
+say: myList

@@ -1,0 +1,8 @@
+var x: 10
+var y: 20
+say; "Hello"
+if x > 5 {
+    say; "Big"
+}
+say; x + // Syntax error here
+say; "End"

@@ -1,0 +1,5 @@
+import "test_plugin.mtro"
+say: "Test sayask"
+var res: sayask: "Enter something: "
+say: "You entered: "
+say: res

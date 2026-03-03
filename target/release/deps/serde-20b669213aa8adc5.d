@@ -1,0 +1,14 @@
+/Users/ishan/IdeaProjects/CoRe Main/CoRe Backup V1.0 copy/target/release/deps/serde-20b669213aa8adc5.d: /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/ishan/IdeaProjects/CoRe\ Main/CoRe\ Backup\ V1.0\ copy/target/release/build/serde-3b1538848242a301/out/private.rs
+
+/Users/ishan/IdeaProjects/CoRe Main/CoRe Backup V1.0 copy/target/release/deps/libserde-20b669213aa8adc5.rlib: /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/ishan/IdeaProjects/CoRe\ Main/CoRe\ Backup\ V1.0\ copy/target/release/build/serde-3b1538848242a301/out/private.rs
+
+/Users/ishan/IdeaProjects/CoRe Main/CoRe Backup V1.0 copy/target/release/deps/libserde-20b669213aa8adc5.rmeta: /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/ishan/IdeaProjects/CoRe\ Main/CoRe\ Backup\ V1.0\ copy/target/release/build/serde-3b1538848242a301/out/private.rs
+
+/Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/ishan/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/ishan/IdeaProjects/CoRe\ Main/CoRe\ Backup\ V1.0\ copy/target/release/build/serde-3b1538848242a301/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/ishan/IdeaProjects/CoRe Main/CoRe Backup V1.0 copy/target/release/build/serde-3b1538848242a301/out

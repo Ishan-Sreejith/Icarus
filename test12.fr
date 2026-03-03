@@ -1,0 +1,10 @@
+say: "=== Map & Assignment Test ==="
+var m: {"a": 1, "b": 2}
+say: m
+say: "=== List & Indexing Test ==="
+var list: [10, 20, 30]
+say: list
+say: "=== Arithmetic Operations ==="
+var x: 5
+var y: 3
+say: x + y

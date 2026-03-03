@@ -1,0 +1,14 @@
+fn system_log: msg {
+    say: msg
+}
+fn startup {
+    system_log: "App logic started."
+}
+fn calculate: x, y {
+    var result: x + y
+    return result
+}
+startup
+var sum: calculate: 10, 20
+say: "Result: "
+say: sum

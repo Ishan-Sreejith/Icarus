@@ -1,0 +1,30 @@
+// Comprehensive test of CoRe features
+// Direct global execution - no functions for JIT testing
+
+// Map & Assignment Test
+say: "=== Map & Assignment Test ==="
+var m: {"a": 1, "b": 2}
+say: m
+
+// List & Indexing Test
+say: "=== List & Indexing Test ==="
+var list: [10, 20, 30]
+say: list
+
+// Arithmetic Operations
+say: "=== Arithmetic Operations ==="
+var x: 5
+var y: 3
+say: x + y
+say: x - y
+say: x * y
+
+// Boolean & Logic
+say: "=== Boolean & Logic ==="
+var a: 10
+var b: 20
+if a < b {
+    say: "10 < 20 is true"
+}
+
+if b > a {

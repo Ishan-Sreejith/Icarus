@@ -1,0 +1,21 @@
+// try/catch + throw (same-function only)
+
+say: "before"
+
+try {
+    say: "in try"
+    throw "boom"
+    say: "unreachable"
+} catch err {
+    say: "caught:"
+    say: err
+}
+
+try {
+    throw 123
+} catch {
+    say: "caught without var"
+}
+
+say: "after"
+

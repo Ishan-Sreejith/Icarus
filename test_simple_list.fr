@@ -1,0 +1,2 @@
+var list: [10, 20]
+say: list

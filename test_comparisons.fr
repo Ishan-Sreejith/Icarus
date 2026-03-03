@@ -1,0 +1,8 @@
+var x: 10
+var y: 5
+var less: x < y
+var greater: x > y
+var equal: x == y
+say: less
+say: greater
+say: equal

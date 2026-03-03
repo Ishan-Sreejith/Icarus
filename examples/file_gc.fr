@@ -1,0 +1,35 @@
+// File garbage collection demonstration
+fn process_file: {
+    say: "Opening file..."
+    
+    // File handle is tracked by GC
+    var f: open: "test.txt"
+    
+    say: "Processing file..."
+    
+    // File is automatically closed when scope exits
+    return 0
+}
+
+// Call function
+process_file:
+
+say: "File has been automatically closed and cleaned up!"
+
+// Nested scopes
+fn outer: {
+    var f1: open: "file1.txt"
+    
+    {
+        var f2: open: "file2.txt"
+        say: "Both files open"
+        // f2 closed here
+    }
+    
+    say: "Only f1 still open"
+    // f1 closed here
+    return 0
+}
+
+outer:
+say: "All files cleaned up"

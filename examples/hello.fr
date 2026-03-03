@@ -1,0 +1,23 @@
+// Hello World in CoRe
+say: "Hello, World!"
+
+// Variables and arithmetic
+var x: 10 + 2
+var y: x * 3
+say: "Result: "
+say: y
+
+// Function definition
+fn greet: name {
+    say: "Hello, "
+    say: name
+    return 0
+}
+
+// Function call
+greet: "CoRe"
+
+// User input
+var username: ask: "What is your name? "
+say: "Welcome, "
+say: username

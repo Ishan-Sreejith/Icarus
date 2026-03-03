@@ -1,0 +1,13 @@
+say: "=== CoRe Language Feature Test ==="
+var x: 42
+var y: 10
+say: x
+say: y
+var sum: x + y
+say: sum
+var greeting: "Hello World"
+say: greeting
+if x > y {
+    say: "x is greater than y"
+}
+say: "=== Test Complete ==="

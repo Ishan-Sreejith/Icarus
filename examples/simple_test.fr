@@ -1,0 +1,6 @@
+fn calculate: x, y {
+    var result: x + y
+    return result
+}
+var sum: calculate: 10, 20
+say: sum

@@ -1,0 +1,20 @@
+fn add: a, b {
+    return a + b
+}
+
+fn complex: a, b, c, d, e, f, g, h {
+    var sum: a + b
+    var sum: sum + c
+    var sum: sum + d
+    var sum: sum + e
+    var sum: sum + f
+    var sum: sum + g
+    var sum: sum + h
+    return sum
+}
+
+var x: add: 10, 20
+say: x
+
+var y: complex: 1, 1, 1, 1, 1, 1, 1, 1
+say: y

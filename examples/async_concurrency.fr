@@ -1,0 +1,22 @@
+// Cooperative async demo:
+// - `forge -r examples/async_concurrency.fr` runs tasks concurrently (via spawn/sleep).
+// - VM/default and `--native` run synchronously; `sleep` is a no-op.
+
+async fn work: label, ms {
+    say: "start "
+    say: label
+    sleep: ms
+    say: "end "
+    say: label
+    return label
+}
+
+var t1: spawn: work: "A", 5
+var t2: spawn: work: "B", 5
+
+var r1: await t1
+var r2: await t2
+
+say: "done "
+say: r1
+say: r2

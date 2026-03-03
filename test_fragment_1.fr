@@ -1,0 +1,3 @@
+say: "=== Map & Assignment Test ==="
+var m: {"a": 1, "b": 2}
+say: m

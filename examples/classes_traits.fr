@@ -1,0 +1,24 @@
+// class/trait + method calls
+// Method call sugar: obj.method: a, b  => calls Type_method(obj, a, b) if obj is a known struct/class type.
+
+trait Printable {
+    fn print: self;
+}
+
+class Point { x, y }
+
+impl Printable for Point {
+    fn print: self {
+        say: "Point("
+        say: self.x
+        say: ", "
+        say: self.y
+        say: ")"
+    }
+}
+
+var p: Point
+p.x = 10
+p.y = 20
+p.print:
+

@@ -1,0 +1,55 @@
+// Expanded feature demo for current JIT path
+// Includes fn/fng/fnc and class aliases cl/clg/clc.
+
+say: "=== Class Declarations (metadata) ==="
+cl Point { x, y }
+clg GlobalNode { id, next }
+clc FastNode { id, flags }
+say: "class aliases parsed"
+
+fn add_local: a, b {
+    return a + b
+}
+
+fng add_global: a, b {
+    return a + b
+}
+
+fnc mul_fast: a, b {
+    return a * b
+}
+
+say: "=== Function Calls (fn/fng/fnc) ==="
+var local_sum: add_local: 4, 5
+say: local_sum
+var global_sum: add_global: 10, 20
+say: global_sum
+var fast_prod: mul_fast: 6, 7
+say: fast_prod
+
+say: "=== Map & List ==="
+var m: {"a": 1, "b": 2}
+say: m
+var list: [10, 20, 30]
+say: list
+say: list[1]
+
+say: "=== Arithmetic & Logic ==="
+var x: 5
+var y: 3
+say: x + y
+say: x - y
+say: x * y
+if x < y {
+    say: "x < y"
+} else {
+    say: "x >= y"
+}
+if y != 0 and x > y {
+    say: "logic works"
+}
+
+say: "=== Strings ==="
+say: "Hello World"
+
+say: "=== Done ==="

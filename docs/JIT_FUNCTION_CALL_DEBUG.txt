@@ -1,0 +1,188 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                 JIT FUNCTION CALL DEBUGGING - STATUS REPORT                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+## 🐛 ISSUE DISCOVERED
+
+**Problem**: Function calls in the JIT compiler crash or return incorrect values
+
+**Test Cases**:
+1. ✅ Basic arithmetic (no functions): Works perfectly (5+3=8, 8*2=16)
+2. ❌ Function with parameters: Returns garbage or wrong values
+3. ❌ Function without parameters: Crashes with panic
+
+---
+
+## 🔍 ROOT CAUSES IDENTIFIED
+
+### Issue 1: Return Value Corruption
+**Location**: src/jit/compiler.rs, Return instruction handler (lines 484-502)
+**Problem**: The retain/release runtime calls overwrite the return value in x0
+
+**Original Code**:
+```rust
+IrInstr::Return { value } => {
+    if let Some(val) = value {
+        let loc = self.regmap.get(val).unwrap();
+        emit.move_to_phys_reg(0, loc);
+        emit.emit_call(RuntimeFunctions::retain().addr());  // ← OVERWRITES x0!
+    }
+    // ... cleanup that also overwrites x0 ...
+    emit.emit_u32_le(encode_ldp_fp_lr());
+    emit.emit_u32_le(encode_ret());
+}
+```
+
+**Fix Applied**: Commented out retain/release calls temporarily
+- Return values now preserved in x0
+- TODO: Re-implement with proper value preservation
+
+### Issue 2: Missing Variable in Register Map
+**Location**: src/jit/compiler.rs, Move instruction (line 278)
+**Problem**: Variables from function calls not found in register map
+
+**Symptoms**:
+- Panic: `called Option::unwrap() on None value`
+- Happens when trying to use function return value
+
+**Likely Cause**: The Call instruction handler allocates a register but may not properly record it, or the IR generates intermediate variables that aren't tracked
+
+---
+
+## 🔧 FIXES APPLIED
+
+### 1. Disabled Retain/Release in Return (TEMPORARY)
+**File**: src/jit/compiler.rs, lines 484-503
+**Status**: ✅ Applied
+**Result**: Functions no longer corrupt x0, but still have issues
+
+### 2. Better Error Messages
+**File**: src/jit/compiler.rs, lines 275-281, 466-475
+**Status**: ✅ Applied
+**Changes**:
+- Move instruction: Better error when variable not found
+- Call instruction: Better error for missing function arguments
+
+---
+
+## 📊 TEST RESULTS
+
+### Test 1: Basic Arithmetic (NO functions)
+```
+var x: 5
+var y: 3
+var z: x + y
+var w: z * 2
+say: w
+```
+**Result**: ✅ Outputs 16 (correct!)
+
+### Test 2: Function with parameter
+```
+fn add_five: x {
+    var result: x + 5
+    return result
+}
+var y: add_five: 10
+say: y
+```
+**Result**: ❌ Outputs 1 or garbage (should be 15)
+
+### Test 3: Function without parameters
+```
+fn get_number {
+    return 42
+}
+var x: get_number
+say: x
+```
+**Result**: ❌ Panics with "Option::unwrap() on None"
+
+---
+
+## 🎯 NEXT STEPS TO FIX
+
+### Priority 1: Fix Variable Tracking
+- [ ] Investigate why function return values aren't in register map
+- [ ] Check IR generation for function calls
+- [ ] Ensure Call handler properly records destination variable
+- [ ] Test with debug output to trace variable allocation
+
+### Priority 2: Proper Return Value Handling
+- [ ] Save x0 value before calling retain()
+- [ ] Restore x0 after cleanup
+- [ ] Or: Skip retain/release for now (simpler approach)
+
+### Priority 3: Test All Cases
+- [ ] Function with no parameters
+- [ ] Function with one parameter
+- [ ] Function with multiple parameters
+- [ ] Function returning a value
+- [ ] Nested function calls
+
+---
+
+## 💡 RECOMMENDED FIX APPROACH
+
+**Short-term** (Get it working):
+1. Keep retain/release disabled
+2. Fix the variable tracking issue in Call handler
+3. Test basic function calls work
+
+**Long-term** (Proper implementation):
+1. Implement proper GC integration
+2. Add retain/release back with x0 preservation
+3. Add stack frame cleanup
+4. Performance optimization
+
+---
+
+## 📝 CODE LOCATIONS
+
+Key files to examine:
+- `src/jit/compiler.rs` - Main JIT compilation logic
+  - Line 60: `compile_function()` - Function compilation entry
+  - Line 424: `Call` instruction handler
+  - Line 484: `Return` instruction handler
+  - Line 275: `Move` instruction handler
+
+- `src/jit/regalloc.rs` - Register allocation
+  - Line 65: `alloc()` - Variable allocation
+  - Line 95: `get()` - Variable lookup
+
+- `src/bin/fforge.rs` - JIT runner
+  - Line 76-90: Function compilation loop
+
+---
+
+## 🔍 DEBUGGING COMMANDS
+
+```bash
+# Clean rebuild
+cargo clean && cargo build
+
+# Test basic arithmetic (should work)
+echo 'var x: 5; var y: 3; say: x + y' > test.fr
+./target/debug/fforge test.fr
+
+# Test function (currently broken)
+cat > fn_test.fr << 'EOF'
+fn add_five: x {
+    return x + 5
+}
+var y: add_five: 10
+EOF
+./target/debug/fforge fn_test.fr
+
+# With backtrace
+RUST_BACKTRACE=1 ./target/debug/fforge fn_test.fr
+```
+
+---
+
+**Status**: 🚧 IN PROGRESS
+**Severity**: HIGH - Core functionality broken
+**ETA**: 1-2 hours to fix properly
+
+═══════════════════════════════════════════════════════════════════════════════
+

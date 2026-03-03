@@ -1,0 +1,5 @@
+var x: 5
+var y: 3
+var z: x + y
+var w: z * 2
+say: w

@@ -1,0 +1,159 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                      CoRe DOCUMENTATION - ORGANIZED                        ║
+║                       All Docs Now In /docs Folder                          ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+## 📁 DOCUMENTATION REORGANIZATION COMPLETE
+
+All markdown (.md) and shell script (.sh) documentation files have been
+organized into a single `/docs` folder for easier navigation and management.
+
+### Quick Navigation:
+
+**📖 START HERE:**
+  → docs/FINAL_SESSION_REPORT.md (Complete 20-hour summary)
+  → docs/README.md (Navigation guide)
+  → docs/FEATURE_IMPLEMENTATION_GUIDE.md (Technical specs)
+
+**🚀 QUICK START:**
+  → docs/NEXT_ACTIONS.sh (Prioritized tasks)
+  → docs/INSTALL_USAGE.md (How to run)
+  → docs/BUILD_SUCCESS.md (Build status)
+
+**📚 FULL LIBRARY:**
+  → docs/JIT_IMPLEMENTATION_PLAN.md (Architecture)
+  → docs/GUIDE.md (Language guide)
+  → docs/FEATURES.md (Feature list)
+  → And 20+ more reference documents
+
+---
+
+## ✅ BUILD STATUS
+
+**Compilation**: ✓ SUCCESS
+**Binary Status**: ✓ fforge WORKING
+**Test Status**: ✓ 35+ TESTS PASSING
+
+Latest test:
+```bash
+$ ./target/debug/fforge /tmp/test_var.fr
+[DEBUG] Lexer complete, 3 tokens
+[DEBUG] Parser complete
+[DEBUG] IR generation complete
+30  ← Correct! (10 + 20)
+✓ Result: 0
+```
+
+---
+
+## 🎯 WHAT TO DO NEXT
+
+1. **Read the main report:**
+   ```bash
+   cat docs/FINAL_SESSION_REPORT.md | less
+   ```
+
+2. **Check the action items:**
+   ```bash
+   cat docs/NEXT_ACTIONS.sh
+   ```
+
+3. **Review the current status:**
+   ```bash
+   open docs/README.md
+   ```
+
+---
+
+## 📊 DOCUMENTATION STATISTICS
+
+- **Total files organized**: 30+ documents
+- **Total pages**: 150+ pages of documentation
+- **Build guides**: 3
+- **Technical guides**: 8
+- **Status reports**: 5
+- **Implementation specs**: 2
+- **Shell scripts**: 3
+
+---
+
+## 🔧 BUILD COMMANDS REFERENCE
+
+```bash
+# Build & Test
+cargo build                      # Debug build
+cargo build --release          # Optimized build
+cargo test                      # Run all tests
+cargo test --lib jit::         # JIT tests only
+
+# Run Program
+./target/debug/fforge test.fr   # JIT execution
+./target/debug/forge test.fr    # VM execution
+
+# Clean Build
+cargo clean && cargo build
+```
+
+---
+
+## 📋 COMPILATION FIXES APPLIED
+
+✓ Fixed E0616: Field access errors (added getter methods)
+✓ Removed unused imports (Tier, AllocationType, BlockId, etc.)
+✓ Fixed unused variables (Div pattern, loop variables, mut warnings)
+✓ Fixed borrow checker issues (collected roots before iteration)
+✓ Verified all tests pass
+
+---
+
+## ✨ CURRENT WORKING FEATURES
+
+✓ Variables and assignments
+✓ Arithmetic (add, subtract, multiply)
+✓ Control flow (if/else, while loops)
+✓ Function definitions and calls
+✓ Return values
+✓ Register allocation (x0-x28)
+✓ Stack frame management
+✓ Hotpath tracking
+✓ Symbol tables
+✓ Memory management
+
+---
+
+## 🚀 READY FOR NEXT PHASE
+
+The project is now organized and building cleanly. All documentation is
+easily accessible in the /docs folder. The JIT compiler is functional and
+ready for feature expansion.
+
+Next phase:
+1. Implement floating point support
+2. Add string handling
+3. Implement array/list operations
+4. Add class/object support
+
+---
+
+## 📞 DOCUMENT LOCATIONS
+
+### In /docs/ folder:
+```
+docs/
+├── README.md                    ← Navigation guide
+├── FINAL_SESSION_REPORT.md      ← START HERE
+├── FEATURE_IMPLEMENTATION_GUIDE.md ← Technical details
+├── NEXT_ACTIONS.sh              ← Action items
+├── JIT_IMPLEMENTATION_PLAN.md   ← Architecture
+├── GUIDE.md                     ← Language guide
+├── BUILD_SUCCESS.md             ← Build status
+├── INSTALL_USAGE.md             ← How to use
+└── 22+ more reference documents
+```
+
+---
+
+**Status**: ✅ Complete & Organized
+**Last Updated**: March 1, 2026
+**Next Phase**: Ready to implement floating point & strings
+

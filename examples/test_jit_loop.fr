@@ -1,0 +1,10 @@
+var i: 0
+var sum: 0
+var limit: 10
+
+while i < limit {
+    var sum: sum + i
+    var i: i + 1
+}
+
+say: sum

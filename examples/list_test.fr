@@ -1,0 +1,12 @@
+// List test
+var l: [10, 20, 30]
+say: "List created"
+
+var first: l[0]
+say: first
+
+var last: l[2]
+say: last
+
+say: "Accessing index 1:"
+say: l[1]

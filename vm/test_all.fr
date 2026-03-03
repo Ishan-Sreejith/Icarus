@@ -1,0 +1,22 @@
+say: "Testing all features..."
+var x: 10
+var y: 20
+say: x + y
+if x < y {
+    say: "x is less than y"
+}
+var i: 0
+while i < 3 {
+    say: i
+    var i: i + 1
+}
+fn greet: name {
+    say: "Hello, "
+    say: name
+}
+greet: "World"
+var list: [1, 2, 3]
+say: list
+var map: {"a": 1, "b": 2}
+say: map
+say: "All tests done."

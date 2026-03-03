@@ -1,0 +1,24 @@
+// Boolean logic test
+var t: 10
+var f: 20
+
+say: "Testing AND:"
+if t < 15 and f > 15 {
+    say: "True AND True is True"
+} else {
+    say: "Failed AND"
+}
+
+say: "Testing OR:"
+if t > 15 or f > 15 {
+    say: "False OR True is True"
+} else {
+    say: "Failed OR"
+}
+
+say: "Testing NOT:"
+if not t > 15 {
+    say: "NOT False is True"
+} else {
+    say: "Failed NOT"
+}
