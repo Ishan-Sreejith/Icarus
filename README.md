@@ -6,7 +6,7 @@
 
 **I used Artificial Intelligence to learn how to program, but did not source any code from it.**
 
-# Note: To use the program, install the executables labelled 'arm64vm', 'metroman' and 'forge'. The executables will be blank in Github because they contain an unsupported format. The source code of the executables are non-previewable since they are in binary.
+** Note: To use the program, install the executables labelled 'arm64vm', 'metroman' and 'forge'. The executables will be blank in Github because they contain an unsupported format. The source code of the executables are non-previewable since they are in binary. **
 
 **Status**: ✅ **FULLY OPERATIONAL**
 
