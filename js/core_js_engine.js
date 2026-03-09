@@ -33,15 +33,20 @@ say: "Sum: " + str(sum)`;
     execute(source) {
         const out = [];
         const js = this.transpile(source);
-        const fn = new Function(
-            "__out",
-            "__len",
-            "__str",
-            "__num",
-            "__upper",
-            "__lower",
-            js
-        );
+        let fn;
+        try {
+            fn = new Function(
+                "__out",
+                "__len",
+                "__str",
+                "__num",
+                "__upper",
+                "__lower",
+                js
+            );
+        } catch (err) {
+            throw new Error(`Transpile/parse error: ${err.message}\nGenerated JS:\n${js}`);
+        }
         fn(
             out,
             (v) => {
