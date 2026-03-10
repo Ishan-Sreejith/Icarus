@@ -1,9 +1,9 @@
 use std::env;
-use std::fs;
 use std::process::ExitCode;
 #[cfg(not(target_arch = "aarch64"))]
 use std::process::Command;
 
+use forge::ff;
 use forge::ir::IrBuilder;
 use forge::jit::compiler::JitCompiler;
 use forge::jit::context::JitContext;
@@ -15,24 +15,37 @@ fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
     let mut debug = false;
     let mut filename: Option<String> = None;
+    let mut out_path: Option<String> = None;
 
     for arg in args.iter().skip(1) {
         match arg.as_str() {
             "-h" | "--help" => {
                 eprintln!("Usage: fforge [-d|--debug] <file.fr>");
+                eprintln!("       fforge --out <syntax.ff>");
                 eprintln!("  Executes the file via the ARM64 JIT (aarch64 only).");
                 return ExitCode::from(0);
             }
             "-d" | "--debug" => debug = true,
+            "--out" => {
+                out_path = Some(String::new());
+            }
             _ if arg.starts_with('-') => {
                 eprintln!("Unknown option: {}", arg);
                 eprintln!("Usage: fforge [-d|--debug] <file.fr>");
+                eprintln!("       fforge --out <syntax.ff>");
                 return ExitCode::from(1);
             }
             _ => {
+                if let Some(path) = out_path.as_mut() {
+                    if path.is_empty() {
+                        *path = arg.clone();
+                        continue;
+                    }
+                }
                 if filename.is_some() {
                     eprintln!("Only one input file is supported.");
                     eprintln!("Usage: fforge [-d|--debug] <file.fr>");
+                    eprintln!("       fforge --out <syntax.ff>");
                     return ExitCode::from(1);
                 }
                 filename = Some(arg.clone());
@@ -40,8 +53,26 @@ fn main() -> ExitCode {
         }
     }
 
+    if let Some(out_path) = out_path {
+        if out_path.is_empty() {
+            eprintln!("Usage: fforge --out <syntax.ff>");
+            return ExitCode::from(1);
+        }
+        return match ff::write_default_syntax_ff(std::path::Path::new(&out_path)) {
+            Ok(()) => {
+                println!("Wrote {}", out_path);
+                ExitCode::from(0)
+            }
+            Err(e) => {
+                eprintln!("{}", e);
+                ExitCode::from(1)
+            }
+        };
+    }
+
     let Some(filename) = filename else {
         eprintln!("Usage: fforge [-d|--debug] <file.fr>");
+        eprintln!("       fforge --out <syntax.ff>");
         return ExitCode::from(1);
     };
     debug_log(debug, "fforge starting...");
@@ -63,7 +94,7 @@ fn main() -> ExitCode {
     }
 
     debug_log(debug, &format!("Reading file: {}", filename));
-    let source = match fs::read_to_string(&filename) {
+    let source = match ff::preprocess_file(std::path::Path::new(&filename)) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("Error reading file: {}", e);

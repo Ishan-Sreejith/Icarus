@@ -3,6 +3,7 @@ mod ast;
 mod codegen;
 mod debug_timer;
 mod diagnostics;
+mod ff;
 mod ir;
 mod jit;
 mod lexer;
@@ -338,7 +339,7 @@ fn main() {
     };
 
     let source = debug_time!(timer, "File Reading", {
-        match fs::read_to_string(&source_file) {
+        match ff::preprocess_file(std::path::Path::new(&source_file)) {
             Ok(s) => {
                 if debug {
                     println!("[DEBUG] Read {} bytes from {}", s.len(), source_file);

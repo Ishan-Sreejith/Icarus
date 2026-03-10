@@ -1215,6 +1215,37 @@ impl IrBuilder {
             }
 
             Expr::Call(func, args) => {
+                if let Some(builtin_name) = func
+                    .strip_prefix("__ff_builtin_")
+                    .and_then(|name| name.strip_suffix("__"))
+                {
+                    if builtin_name == "ask" {
+                        if args.len() != 1 {
+                            return Err("ask() override expects exactly 1 argument".to_string());
+                        }
+                        let prompt_temp = self.build_expr(&args[0], instrs)?;
+                        let dest = self.fresh_temp();
+                        self.var_types.insert(dest.clone(), ValueType::String);
+                        instrs.push(IrInstr::Input {
+                            dest: dest.clone(),
+                            prompt: prompt_temp,
+                        });
+                        return Ok(dest);
+                    }
+
+                    let mut arg_temps = Vec::new();
+                    for arg in args {
+                        arg_temps.push(self.build_expr(arg, instrs)?);
+                    }
+                    let dest = self.fresh_temp();
+                    instrs.push(IrInstr::Call {
+                        dest: Some(dest.clone()),
+                        func: builtin_name.to_string(),
+                        args: arg_temps,
+                    });
+                    return Ok(dest);
+                }
+
                 let mut arg_temps = Vec::new();
                 for arg in args {
                     arg_temps.push(self.build_expr(arg, instrs)?);
@@ -1313,8 +1344,7 @@ impl IrBuilder {
 }
 
 fn parse_core_file(path: &Path) -> Result<Program, String> {
-    let source = fs::read_to_string(path)
-        .map_err(|e| format!("Failed to read file '{}': {}", path.display(), e))?;
+    let source = crate::ff::preprocess_file(path)?;
 
     let tokens: Result<Vec<_>, _> = lexer::Lexer::new(&source)
         .map(|(token, span)| match token {
