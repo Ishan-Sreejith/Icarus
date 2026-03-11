@@ -1,8 +1,0 @@
-var x: 5
-var y: 3
-var result1: x + y
-var result2: x - y  
-var result3: x * y
-say: result1
-say: result2
-say: result3

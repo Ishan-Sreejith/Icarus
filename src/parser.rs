@@ -15,6 +15,10 @@ impl Parser {
         self.tokens.get(self.pos).map(|(token, _)| token)
     }
 
+    fn peek(&self, offset: usize) -> Option<&Token> {
+        self.tokens.get(self.pos + offset).map(|(token, _)| token)
+    }
+
     fn advance(&mut self) -> Option<Token> {
         if self.pos < self.tokens.len() {
             let (token, _) = self.tokens[self.pos].clone();
@@ -159,6 +163,17 @@ impl Parser {
     }
 
     fn parse_statement(&mut self) -> Result<Stmt, String> {
+        if matches!(self.current(), Some(Token::Identifier(_)))
+            && matches!(self.peek(1), Some(Token::Colon))
+        {
+            let name = match self.advance() {
+                Some(Token::Identifier(s)) => s,
+                _ => return self.error("Expected identifier before ':'".to_string()),
+            };
+            self.expect(Token::Colon)?;
+            let value = self.parse_expression()?;
+            return Ok(Stmt::Assign(Expr::Identifier(name), value));
+        }
         match self.current() {
             Some(Token::Var) => self.parse_var_decl(),
             Some(Token::Say) => self.parse_say(),
@@ -187,7 +202,9 @@ impl Parser {
             }
             _ => {
                 let expr = self.parse_expression()?;
-                if matches!(self.current(), Some(Token::Eq)) {
+                if matches!(self.current(), Some(Token::Eq))
+                    || (matches!(self.current(), Some(Token::Colon)) && is_assignable_expr(&expr))
+                {
                     self.advance();
                     let value = self.parse_expression()?;
                     Ok(Stmt::Assign(expr, value))
@@ -817,6 +834,10 @@ impl Parser {
     }
 }
 
+fn is_assignable_expr(expr: &Expr) -> bool {
+    matches!(expr, Expr::Identifier(_) | Expr::Index(_, _) | Expr::Member(_, _))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -900,5 +921,15 @@ p.print:
 "#;
         let program = parse_source(source).unwrap();
         assert!(program.items.len() >= 4);
+    }
+
+    #[test]
+    fn test_parse_index_assignment_with_colon() {
+        let source = r#"data["results"]: data["results"] + [1]"#;
+        let program = parse_source(source).unwrap();
+        match &program.items[0] {
+            TopLevel::Statement(Stmt::Assign(Expr::Index(_, _), _)) => {}
+            other => panic!("expected index assignment, got {:?}", other),
+        }
     }
 }

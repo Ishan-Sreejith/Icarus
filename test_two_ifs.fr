@@ -1,8 +1,0 @@
-var a: 10
-var b: 20
-if a < b {
-    say: "first"
-}
-if b > a {
-    say: "second"
-}

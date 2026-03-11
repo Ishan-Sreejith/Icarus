@@ -606,13 +606,22 @@ impl IrBuilder {
             }
             Stmt::TryCatch(try_body, _err_var, catch_body) => {
                 let thrown_slot = "__core_thrown".to_string();
+                let thrown_flag = "__core_thrown_flag".to_string();
                 let catch_label = self.fresh_label();
                 let end_label = self.fresh_label();
 
+                instrs.push(IrInstr::LoadConst {
+                    dest: thrown_flag.clone(),
+                    value: IrValue::Bool(false),
+                });
                 self.try_stack.push((catch_label.clone(), _err_var.clone()));
 
                 for stmt in try_body {
                     self.build_statement(stmt, instrs)?;
+                    instrs.push(IrInstr::JumpIf {
+                        cond: thrown_flag.clone(),
+                        label: catch_label.clone(),
+                    });
                 }
 
                 self.try_stack.pop();
@@ -621,6 +630,10 @@ impl IrBuilder {
                 });
 
                 instrs.push(IrInstr::Label { name: catch_label });
+                instrs.push(IrInstr::LoadConst {
+                    dest: thrown_flag.clone(),
+                    value: IrValue::Bool(false),
+                });
                 instrs.push(IrInstr::Move {
                     dest: _err_var.clone(),
                     src: thrown_slot,
@@ -632,18 +645,23 @@ impl IrBuilder {
             }
             Stmt::Throw(expr) => {
                 let thrown_slot = "__core_thrown".to_string();
+                let thrown_flag = "__core_thrown_flag".to_string();
                 let val = self.build_expr(expr, instrs)?;
-                let (catch_label, _err_var) = self
-                    .try_stack
-                    .last()
-                    .cloned()
-                    .ok_or_else(|| "throw used outside of a try/catch block".to_string())?;
+                let target = self.try_stack.last().cloned();
 
                 instrs.push(IrInstr::Move {
                     dest: thrown_slot,
                     src: val,
                 });
-                instrs.push(IrInstr::Jump { label: catch_label });
+                instrs.push(IrInstr::LoadConst {
+                    dest: thrown_flag.clone(),
+                    value: IrValue::Bool(true),
+                });
+                if let Some((catch_label, _err_var)) = target {
+                    instrs.push(IrInstr::Jump { label: catch_label });
+                } else {
+                    instrs.push(IrInstr::Return { value: None });
+                }
             }
             Stmt::Struct(_) => {
             }

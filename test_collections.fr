@@ -1,4 +1,0 @@
-var numbers: [10, 20, 30]
-var text_map: {"greeting": "hello", "count": 42}
-say: numbers
-say: text_map

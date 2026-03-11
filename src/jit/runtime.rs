@@ -108,6 +108,39 @@ fn format_value(val: EncodedValue) -> String {
     }
 }
 
+#[no_mangle]
+pub extern "C" fn rt_is_map(val: EncodedValue) -> EncodedValue {
+    if is_int(val) || val == 0 {
+        return encode_int(0);
+    }
+    let rc = unsafe { Rc::from_raw(val as GcPtr) };
+    let is_map = matches!(&*rc.borrow(), GcData::Map(_));
+    let _ = Rc::into_raw(rc);
+    encode_int(if is_map { 1 } else { 0 })
+}
+
+#[no_mangle]
+pub extern "C" fn rt_is_list(val: EncodedValue) -> EncodedValue {
+    if is_int(val) || val == 0 {
+        return encode_int(0);
+    }
+    let rc = unsafe { Rc::from_raw(val as GcPtr) };
+    let is_list = matches!(&*rc.borrow(), GcData::List(_));
+    let _ = Rc::into_raw(rc);
+    encode_int(if is_list { 1 } else { 0 })
+}
+
+#[no_mangle]
+pub extern "C" fn rt_is_string(val: EncodedValue) -> EncodedValue {
+    if is_int(val) || val == 0 {
+        return encode_int(0);
+    }
+    let rc = unsafe { Rc::from_raw(val as GcPtr) };
+    let is_string = matches!(&*rc.borrow(), GcData::String(_));
+    let _ = Rc::into_raw(rc);
+    encode_int(if is_string { 1 } else { 0 })
+}
+
 
 #[no_mangle]
 pub extern "C" fn rt_retain(val: EncodedValue) {

@@ -1,8 +1,0 @@
-var x: 10
-var y: 5
-var sum: x + y
-var diff: x - y
-var prod: x * y
-say: sum
-say: diff  
-say: prod

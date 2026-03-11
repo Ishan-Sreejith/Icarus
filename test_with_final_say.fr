@@ -1,3 +1,0 @@
-var test: 42
-say: test  
-say: "=== All Tests Complete ==="

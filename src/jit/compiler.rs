@@ -81,6 +81,7 @@ pub struct JitCompiler<'a> {
     labels: LabelManager,
     context: &'a mut JitContext,
     locals: HashSet<String>,
+    current_function: Option<String>,
 
     profile: JitProfile,
     symbol_table: SymbolTable,
@@ -95,6 +96,7 @@ impl<'a> JitCompiler<'a> {
             labels: LabelManager::new(),
             context,
             locals: HashSet::new(),
+            current_function: None,
             profile: JitProfile::new(100, 1000),
             symbol_table: SymbolTable::new(),
             memory_table: MemoryTable::new(),
@@ -103,6 +105,7 @@ impl<'a> JitCompiler<'a> {
     }
 
     pub fn compile_function(&mut self, func: &IrFunction) -> Result<(), String> {
+        self.current_function = Some(func.name.clone());
         self.hotpath_tracker.record_function_call(&func.name);
         if self.profile.tick_call() {
             self.profile.promote();
@@ -147,6 +150,7 @@ impl<'a> JitCompiler<'a> {
                 self.memory_table.decrement_ref(alloc_id);
             }
         }
+        self.current_function = None;
 
         Ok(())
     }
@@ -154,6 +158,7 @@ impl<'a> JitCompiler<'a> {
     pub fn compile(&mut self, instrs: &[IrInstr], preserve_arg_regs: usize) -> Result<Vec<u8>, String> {
         let mut emit = ArithmeticEncoder::new();
         let mut has_explicit_return = false;
+        self.labels.define_label("__fn_entry", emit.len());
 
         let rt_print = runtime::rt_print as *const () as u64;
         let rt_release = runtime::rt_release as *const () as u64;
@@ -179,6 +184,9 @@ impl<'a> JitCompiler<'a> {
         let rt_sqrt = runtime::rt_sqrt as *const () as u64;
         let rt_pow = runtime::rt_pow as *const () as u64;
         let rt_contains = runtime::rt_contains as *const () as u64;
+        let rt_is_map = runtime::rt_is_map as *const () as u64;
+        let rt_is_list = runtime::rt_is_list as *const () as u64;
+        let rt_is_string = runtime::rt_is_string as *const () as u64;
         let rt_float_add = runtime::rt_float_add as *const () as u64;
         let rt_float_sub = runtime::rt_float_sub as *const () as u64;
         let rt_float_mul = runtime::rt_float_mul as *const () as u64;
@@ -994,6 +1002,9 @@ impl<'a> JitCompiler<'a> {
                         ("pop", 1) => Some((rt_list_pop, args[0].as_str())),
                         ("abs", 1) => Some((rt_abs, args[0].as_str())),
                         ("sqrt", 1) => Some((rt_sqrt, args[0].as_str())),
+                        ("is_map", 1) => Some((rt_is_map, args[0].as_str())),
+                        ("is_list", 1) => Some((rt_is_list, args[0].as_str())),
+                        ("is_string", 1) => Some((rt_is_string, args[0].as_str())),
                         ("range", 2) => None,
                         ("push", 2) => None,
                         _ => None,
@@ -1136,11 +1147,18 @@ impl<'a> JitCompiler<'a> {
                             .ok_or_else(|| format!("Undefined var: {}", arg))?;
                         emit.load_to_reg(i as u8, loc);
                     }
-                    let addr = self
-                        .context
-                        .get_function_addr(func)
-                        .ok_or_else(|| format!("Unknown function: {}", func))?;
-                    emit.emit_call(addr);
+                    if self.current_function.as_deref() == Some(func.as_str()) {
+                        let off = emit.len();
+                        emit.emit_u32_le(0);
+                        self.labels
+                            .record_branch(off, "__fn_entry", BranchKind::BL);
+                    } else {
+                        let addr = self
+                            .context
+                            .get_function_addr(func)
+                            .ok_or_else(|| format!("Unknown function: {}", func))?;
+                        emit.emit_call(addr);
+                    }
                     emit.emit_u32_le(encode_add_imm(Reg::X(9), Reg::X(0), 0));
                     emit_restore_call_regs(&mut emit);
                     if let Some(dest) = dest {

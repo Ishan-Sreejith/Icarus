@@ -32,10 +32,17 @@
 target/
 vm/target/
 wasm/target/
+**/target/
+pkg/
+wasm/pkg/
 .DS_Store
+.idea/
 
 # Documentation and markdown
 *.md
+*.txt
 !README.md
 /docs/
 /examples/
+*.fr
+*.s

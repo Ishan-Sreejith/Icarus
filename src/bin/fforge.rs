@@ -1,6 +1,5 @@
 use std::env;
 use std::process::ExitCode;
-#[cfg(not(target_arch = "aarch64"))]
 use std::process::Command;
 
 use forge::ff;
@@ -168,7 +167,7 @@ fn main() -> ExitCode {
             debug_log(debug, &format!("Compiling function: {}", name));
             if let Err(e) = jit.compile_function(func) {
                 eprintln!("✗ JIT Compilation Error (Function {}): {}", name, e);
-                return ExitCode::from(1);
+                return run_forge_fallback(&filename);
             }
             debug_log(debug, &format!("Function {} compiled OK", name));
         }
@@ -192,7 +191,7 @@ fn main() -> ExitCode {
         }
         Err(e) => {
             eprintln!("✗ JIT Runtime Error: {}", e);
-            ExitCode::from(1)
+            run_forge_fallback(&filename)
         }
     }
 }
@@ -227,4 +226,42 @@ fn find_forge() -> String {
         }
     }
     "forge".to_string()
+}
+
+#[cfg(target_arch = "aarch64")]
+fn find_forge() -> String {
+    if let Ok(current) = env::current_exe() {
+        if let Some(dir) = current.parent() {
+            let candidate = dir.join("forge");
+            if candidate.exists() {
+                return candidate.to_string_lossy().to_string();
+            }
+        }
+    }
+    "forge".to_string()
+}
+
+fn run_forge_fallback(filename: &str) -> ExitCode {
+    eprintln!("fforge: falling back to `forge --rust` for {}", filename);
+    let mut candidate = None;
+    let local_debug = std::path::Path::new("target/debug/forge");
+    let local_release = std::path::Path::new("target/release/forge");
+    if local_debug.exists() {
+        candidate = Some(local_debug.to_string_lossy().to_string());
+    } else if local_release.exists() {
+        candidate = Some(local_release.to_string_lossy().to_string());
+    }
+
+    let status = if let Some(bin) = candidate {
+        Command::new(bin).arg("--rust").arg(filename).status()
+    } else {
+        Command::new(find_forge()).arg("--rust").arg(filename).status()
+    };
+    match status {
+        Ok(s) => ExitCode::from(s.code().unwrap_or(1) as u8),
+        Err(e) => {
+            eprintln!("fforge: failed to execute forge fallback: {}", e);
+            ExitCode::from(1)
+        }
+    }
 }

@@ -1,8 +1,0 @@
-*
-!.gitignore
-!README.md
-!forge.d.ts
-!forge.js
-!forge_bg.wasm
-!forge_bg.wasm.d.ts
-!package.json

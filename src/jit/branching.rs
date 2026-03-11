@@ -52,6 +52,7 @@ pub enum BranchKind {
     BEq,
     BLt,
     BGt,
+    BL,
 }
 
 pub struct LabelManager {
@@ -96,6 +97,7 @@ impl LabelManager {
                 BranchKind::BEq => encode_b_eq(relative_bytes),
                 BranchKind::BLt => encode_b_lt(relative_bytes),
                 BranchKind::BGt => encode_b_gt(relative_bytes),
+                BranchKind::BL => crate::jit::encoder::encode_bl(relative_bytes),
             };
             let bytes = branch_instr.to_le_bytes();
             code[*branch_offset..*branch_offset + 4].copy_from_slice(&bytes);
