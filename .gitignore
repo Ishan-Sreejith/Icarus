@@ -34,7 +34,7 @@ vm/target/
 wasm/target/
 .DS_Store
 
-# Documentation
-/docs/
+# Documentation and markdown
 *.md
 !README.md
+/docs/
