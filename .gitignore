@@ -41,8 +41,16 @@ wasm/pkg/
 # Documentation and markdown
 *.md
 *.txt
-!README.md
+!/README.md
 /docs/
 /examples/
+/deploy/
 *.fr
 *.s
+# Executables generated from .fr samples/tests
+/main
+/test*
+/vm_test
+*.bak*
+/wasm/README.md
+/src/jit/*.bak*
