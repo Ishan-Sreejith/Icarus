@@ -1,6 +1,6 @@
 # CoRe Language
 
-CoRe is a small programming language project written in Rust. This repository includes the language runtime, a VM, a JIT path, a Rust-based interpreter, and a large set of example `.fr` programs used for testing features.
+CoRe is a small programming language project written in Rust. This repository includes the language runtime, a VM, a JIT path, a Rust-based interpreter, and the code for a simple online demonstration running on the V8 engine and WASM.
 
 ## What’s here
 
