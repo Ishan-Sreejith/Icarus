@@ -5,10 +5,12 @@ pub mod diagnostics;
 pub mod ff;
 pub mod ir;
 pub mod jit;
+pub mod training_data;
 pub mod lexer;
 pub mod meta;
 pub mod parser;
 pub mod runtime;
+pub mod optimizer;
 
 // WebAssembly-specific modules
 #[cfg(feature = "wasm")]
@@ -28,6 +30,7 @@ pub type Ast = ast::Program;
 pub use lexer::Token;
 pub use ir::{IrInstr, IrProgram};
 pub use codegen::direct::{DirectExecutor, Value};
+pub use optimizer::{optimize_program, OptimizationStats};
 
 pub fn lex(source: &str) -> Result<Vec<(Token, Range<usize>)>, LexError> {
     lexer::Lexer::new(source)

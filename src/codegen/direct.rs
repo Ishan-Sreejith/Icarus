@@ -1,4 +1,5 @@
 use crate::ir::*;
+use crate::training_data;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::io::{self, Write};
@@ -1094,16 +1095,20 @@ impl DirectExecutor {
                     prompt.to_string()
                 };
 
-                print!("{}", prompt_str);
-                io::stdout().flush().unwrap();
+                if let Some(answer) = training_data::lookup(&prompt_str) {
+                    self.variables.insert(dest.clone(), Value::String(answer));
+                } else {
+                    print!("{}", prompt_str);
+                    io::stdout().flush().unwrap();
 
-                let mut input = String::new();
-                io::stdin()
-                    .read_line(&mut input)
-                    .map_err(|e| e.to_string())?;
+                    let mut input = String::new();
+                    io::stdin()
+                        .read_line(&mut input)
+                        .map_err(|e| e.to_string())?;
 
-                let input = input.trim().to_string();
-                self.variables.insert(dest.clone(), Value::String(input));
+                    let input = input.trim().to_string();
+                    self.variables.insert(dest.clone(), Value::String(input));
+                }
             }
             IrInstr::FAdd { dest, left, right } => {
                 let left_val = self.get_number(left)?;

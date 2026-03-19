@@ -5,12 +5,13 @@ use crate::jit::context::JitContext;
 use crate::jit::encoder::*;
 use crate::jit::hotpath::HotpathTracker;
 use crate::jit::memory::JitMemory;
-use crate::jit::memory_table::MemoryTable;
+use crate::jit::memory_table::{AllocationType, MemoryTable};
 use crate::jit::phase11::JitProfile;
 use crate::jit::regalloc::{ArithmeticEncoder, Location, RegisterMap};
 use crate::jit::runtime;
-use crate::jit::symbol_table::SymbolTable;
-use std::collections::{HashSet, VecDeque};
+use crate::jit::symbol_table::{SymbolLocation, SymbolTable, ValueType};
+use std::cmp::Reverse;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 fn encode_int(val: i64) -> u64 {
     ((val as u64) << 1) | 1
@@ -132,6 +133,10 @@ impl<'a> JitCompiler<'a> {
                 }
             }
             self.locals.insert(param.clone());
+            let sym_loc = Self::location_to_symbol(loc);
+            let _ = self
+                .symbol_table
+                .declare_variable(param.clone(), ValueType::Unknown, sym_loc);
         }
 
         let code = self.compile(&func.instructions, func.params.len())?;
@@ -203,6 +208,9 @@ impl<'a> JitCompiler<'a> {
         let rt_or = runtime::rt_or as *const () as u64;
         let rt_not = runtime::rt_not as *const () as u64;
         let rt_is_truthy = runtime::rt_is_truthy as *const () as u64;
+        let rt_input = runtime::rt_input as *const () as u64;
+
+        self.preallocate_hot_vars(instrs, 4);
 
         for instr in instrs {
             let maybe_dest: Option<&str> = match instr {
@@ -229,7 +237,8 @@ impl<'a> JitCompiler<'a> {
                 | IrInstr::Ne { dest, .. }
                 | IrInstr::LogicNot { dest, .. }
                 | IrInstr::LogicAnd { dest, .. }
-                | IrInstr::LogicOr { dest, .. } => Some(dest.as_str()),
+                | IrInstr::LogicOr { dest, .. }
+                | IrInstr::Input { dest, .. } => Some(dest.as_str()),
                 IrInstr::Call {
                     dest: Some(dest), ..
                 } => Some(dest.as_str()),
@@ -265,6 +274,7 @@ impl<'a> JitCompiler<'a> {
         let mut assigned_order: VecDeque<String> = VecDeque::new();
 
         for instr in instrs {
+            self.track_metadata(instr);
             match instr {
                 IrInstr::LoadConst { dest, value } => {
                     if assigned.contains(dest) {
@@ -555,6 +565,32 @@ impl<'a> JitCompiler<'a> {
                         .ok_or_else(|| format!("Undefined var: {}", right))?;
                     emit_call2(&mut emit, rt_or, l, r);
                     emit.store_from_reg(9, dst_loc);
+                    if assigned.insert(dest.to_string()) {
+                        assigned_order.push_back(dest.to_string());
+                    }
+                }
+                IrInstr::Input { dest, prompt } => {
+                    if assigned.contains(dest) {
+                        let loc = self
+                            .regmap
+                            .get(dest)
+                            .ok_or_else(|| format!("Undefined var: {}", dest))?;
+                        emit_save_call_regs(&mut emit);
+                        emit.load_to_reg(0, loc);
+                        emit.emit_call(rt_release);
+                        emit_restore_call_regs(&mut emit);
+                    }
+
+                    let dst_loc = self.regmap.alloc(dest)?;
+                    let prompt_loc = self
+                        .regmap
+                        .get(prompt)
+                        .ok_or_else(|| format!("Undefined var: {}", prompt))?;
+
+                    emit_call1(&mut emit, rt_input, prompt_loc);
+
+                    emit.store_from_reg(9, dst_loc);
+
                     if assigned.insert(dest.to_string()) {
                         assigned_order.push_back(dest.to_string());
                     }
@@ -1285,7 +1321,7 @@ impl<'a> JitCompiler<'a> {
                 | IrInstr::LogicNot { dest, .. }
                 | IrInstr::AllocMap { dest }
                 | IrInstr::AllocList { dest, .. }
-                | IrInstr::GetIndex { dest, .. } => Some(dest.as_str()),
+                | IrInstr::GetIndex { dest, .. }
                 | IrInstr::GetMap { dest, .. }
                 | IrInstr::GetMember { dest, .. }
                 | IrInstr::Await { dest, .. } => Some(dest.as_str()),
@@ -1329,6 +1365,84 @@ impl<'a> JitCompiler<'a> {
         Ok(code)
     }
 
+    fn preallocate_hot_vars(&mut self, instrs: &[IrInstr], max: usize) {
+        let mut counts: HashMap<String, usize> = HashMap::new();
+        for instr in instrs {
+            if let Some(def) = instr_def_var(instr) {
+                *counts.entry(def.to_string()).or_insert(0) += 1;
+            }
+            for var in instr_read_vars(instr) {
+                *counts.entry(var.to_string()).or_insert(0) += 1;
+            }
+        }
+
+        let mut vars: Vec<(String, usize)> = counts.into_iter().collect();
+        vars.sort_by_key(|(_, count)| Reverse(*count));
+        for (var, _) in vars.into_iter().take(max) {
+            let _ = self.regmap.alloc(&var);
+        }
+    }
+
+    fn track_metadata(&mut self, instr: &IrInstr) {
+        self.memory_table.increment_instruction();
+        let time = self.memory_table.get_instruction_counter();
+
+        if let Some(def) = instr_def_var(instr) {
+            self.hotpath_tracker.record_var_write(def, time);
+            let value_type = instr_def_type(instr);
+            let sym_loc = self.regmap.get(def).and_then(Self::location_to_symbol);
+            if self.symbol_table.lookup(def).is_some() {
+                if let Some(loc) = sym_loc {
+                    let _ = self.symbol_table.update_location(def, loc);
+                }
+            } else {
+                let _ = self
+                    .symbol_table
+                    .declare_variable(def.to_string(), value_type, sym_loc);
+            }
+
+            if matches!(
+                instr,
+                IrInstr::AllocList { .. }
+                    | IrInstr::AllocMap { .. }
+                    | IrInstr::AllocStruct { .. }
+                    | IrInstr::LoadConst {
+                        value: IrValue::String(_),
+                        ..
+                    }
+            ) {
+                let (alloc_type, size) = match instr {
+                    IrInstr::AllocList { items, .. } => (AllocationType::List, items.len()),
+                    IrInstr::AllocMap { .. } => (AllocationType::Map, 0),
+                    IrInstr::AllocStruct { .. } => (AllocationType::Object, 0),
+                    IrInstr::LoadConst {
+                        value: IrValue::String(s),
+                        ..
+                    } => (AllocationType::String, s.len()),
+                    _ => (AllocationType::Object, 0),
+                };
+                let id = self.memory_table.allocate(alloc_type, size);
+                self.memory_table.increment_ref(id);
+            }
+        }
+
+        for var in instr_read_vars(instr) {
+            self.hotpath_tracker.record_var_read(var, time);
+            self.symbol_table.increment_reference(var);
+        }
+
+        if let IrInstr::Call { func, .. } = instr {
+            self.symbol_table.increment_call_count(func);
+        }
+    }
+
+    fn location_to_symbol(loc: Location) -> Option<SymbolLocation> {
+        Some(match loc {
+            Location::Register(r) => SymbolLocation::Register(r),
+            Location::Stack(off) => SymbolLocation::Stack(off),
+        })
+    }
+
     pub fn execute_global(&mut self, instrs: &[IrInstr]) -> Result<u64, String> {
         let code = self.compile(instrs, 0)?;
 
@@ -1348,6 +1462,123 @@ impl<'a> JitCompiler<'a> {
         self.context.add_code_block(mem);
 
         Ok(result)
+    }
+}
+
+fn instr_def_var(instr: &IrInstr) -> Option<&str> {
+    match instr {
+        IrInstr::Add { dest, .. }
+        | IrInstr::Sub { dest, .. }
+        | IrInstr::Mul { dest, .. }
+        | IrInstr::Div { dest, .. }
+        | IrInstr::FAdd { dest, .. }
+        | IrInstr::FSub { dest, .. }
+        | IrInstr::FMul { dest, .. }
+        | IrInstr::FDiv { dest, .. }
+        | IrInstr::Eq { dest, .. }
+        | IrInstr::Ne { dest, .. }
+        | IrInstr::Lt { dest, .. }
+        | IrInstr::Gt { dest, .. }
+        | IrInstr::LogicAnd { dest, .. }
+        | IrInstr::LogicOr { dest, .. }
+        | IrInstr::LogicNot { dest, .. }
+        | IrInstr::BitAnd { dest, .. }
+        | IrInstr::BitOr { dest, .. }
+        | IrInstr::BitXor { dest, .. }
+        | IrInstr::BitNot { dest, .. }
+        | IrInstr::Shl { dest, .. }
+        | IrInstr::Shr { dest, .. }
+        | IrInstr::AllocStruct { dest, .. }
+        | IrInstr::LoadConst { dest, .. }
+        | IrInstr::Move { dest, .. }
+        | IrInstr::AllocList { dest, .. }
+        | IrInstr::GetIndex { dest, .. }
+        | IrInstr::AllocMap { dest }
+        | IrInstr::GetMap { dest, .. }
+        | IrInstr::GetMember { dest, .. }
+        | IrInstr::Input { dest, .. }
+        | IrInstr::Await { dest, .. } => Some(dest),
+        IrInstr::Call { dest: Some(dest), .. } => Some(dest),
+        _ => None,
+    }
+}
+
+fn instr_read_vars<'a>(instr: &'a IrInstr) -> Vec<&'a str> {
+    match instr {
+        IrInstr::Add { left, right, .. }
+        | IrInstr::Sub { left, right, .. }
+        | IrInstr::Mul { left, right, .. }
+        | IrInstr::Div { left, right, .. }
+        | IrInstr::FAdd { left, right, .. }
+        | IrInstr::FSub { left, right, .. }
+        | IrInstr::FMul { left, right, .. }
+        | IrInstr::FDiv { left, right, .. }
+        | IrInstr::Eq { left, right, .. }
+        | IrInstr::Ne { left, right, .. }
+        | IrInstr::Lt { left, right, .. }
+        | IrInstr::Gt { left, right, .. }
+        | IrInstr::LogicAnd { left, right, .. }
+        | IrInstr::LogicOr { left, right, .. }
+        | IrInstr::BitAnd { left, right, .. }
+        | IrInstr::BitOr { left, right, .. }
+        | IrInstr::BitXor { left, right, .. }
+        | IrInstr::Shl { left, right, .. }
+        | IrInstr::Shr { left, right, .. } => vec![left, right],
+        IrInstr::LogicNot { src, .. } | IrInstr::BitNot { src, .. } => vec![src],
+        IrInstr::Move { src, .. } => vec![src],
+        IrInstr::AllocList { items, .. } => items.iter().map(|s| s.as_str()).collect(),
+        IrInstr::GetIndex { src, index, .. } => vec![src, index],
+        IrInstr::SetIndex { src, index, value } => vec![src, index, value],
+        IrInstr::SetMap { map, key, value } => vec![map, key, value],
+        IrInstr::GetMap { map, key, .. } => vec![map, key],
+        IrInstr::SetMember { obj, value, .. } => vec![obj, value],
+        IrInstr::GetMember { obj, .. } => vec![obj],
+        IrInstr::Print { src } | IrInstr::PrintNum { src } => vec![src],
+        IrInstr::Input { prompt, .. } => vec![prompt],
+        IrInstr::Call { args, .. } => args.iter().map(|s| s.as_str()).collect(),
+        IrInstr::Return { value: Some(v) } => vec![v],
+        IrInstr::JumpIf { cond, .. } => vec![cond],
+        IrInstr::CloseFile { handle } => vec![handle],
+        IrInstr::Spawn { task } => vec![task],
+        IrInstr::Await { task, .. } => vec![task],
+        IrInstr::PreScan { target } => vec![target],
+        _ => Vec::new(),
+    }
+}
+
+fn instr_def_type(instr: &IrInstr) -> ValueType {
+    match instr {
+        IrInstr::LoadConst { value, .. } => match value {
+            IrValue::Number(_) => ValueType::Int,
+            IrValue::String(_) => ValueType::String,
+            IrValue::Bool(_) => ValueType::Bool,
+        },
+        IrInstr::Add { .. }
+        | IrInstr::Sub { .. }
+        | IrInstr::Mul { .. }
+        | IrInstr::Div { .. }
+        | IrInstr::BitAnd { .. }
+        | IrInstr::BitOr { .. }
+        | IrInstr::BitXor { .. }
+        | IrInstr::BitNot { .. }
+        | IrInstr::Shl { .. }
+        | IrInstr::Shr { .. } => ValueType::Int,
+        IrInstr::FAdd { .. }
+        | IrInstr::FSub { .. }
+        | IrInstr::FMul { .. }
+        | IrInstr::FDiv { .. } => ValueType::Float,
+        IrInstr::Eq { .. }
+        | IrInstr::Ne { .. }
+        | IrInstr::Lt { .. }
+        | IrInstr::Gt { .. }
+        | IrInstr::LogicAnd { .. }
+        | IrInstr::LogicOr { .. }
+        | IrInstr::LogicNot { .. } => ValueType::Bool,
+        IrInstr::AllocList { .. } => ValueType::List,
+        IrInstr::AllocMap { .. } => ValueType::Map,
+        IrInstr::AllocStruct { .. } => ValueType::Object,
+        IrInstr::Input { .. } => ValueType::String,
+        _ => ValueType::Unknown,
     }
 }
 

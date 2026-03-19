@@ -2,8 +2,10 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Read;
+use std::io::{self, Read, Write};
 use std::rc::Rc;
+
+use crate::training_data;
 
 pub type EncodedValue = u64;
 
@@ -171,6 +173,28 @@ pub extern "C" fn rt_alloc_string(buffer: *const u8, len: u64) -> EncodedValue {
         let rc = Rc::new(RefCell::new(GcData::String(s)));
         rc_to_ptr(rc)
     }
+}
+
+#[no_mangle]
+pub extern "C" fn rt_input(prompt: EncodedValue) -> EncodedValue {
+    let prompt_str = get_string(prompt);
+
+    if let Some(answer) = training_data::lookup(&prompt_str) {
+        let rc = Rc::new(RefCell::new(GcData::String(answer)));
+        return rc_to_ptr(rc);
+    }
+
+    print!("{}", prompt_str);
+    io::stdout().flush().ok();
+
+    let mut input = String::new();
+    if io::stdin().read_line(&mut input).is_err() {
+        return 0;
+    }
+
+    let input = input.trim().to_string();
+    let rc = Rc::new(RefCell::new(GcData::String(input)));
+    rc_to_ptr(rc)
 }
 
 #[no_mangle]

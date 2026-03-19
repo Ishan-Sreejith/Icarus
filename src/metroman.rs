@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::Write;
 
 #[derive(Parser)]
@@ -17,6 +17,15 @@ enum Commands {
     #[command(name = "--out")]
     Out {
         file: String,
+    },
+    #[command(name = "train")]
+    Train {
+        #[arg(long, default_value = "training_data.json")]
+        data: String,
+        #[arg(long)]
+        prompt: String,
+        #[arg(long)]
+        answer: String,
     },
 }
 
@@ -51,9 +60,37 @@ fn main() {
 
                 println!("✓ Created plugin template: {}", file);
             }
+            Commands::Train { data, prompt, answer } => {
+                let mut map: HashMap<String, String> = HashMap::new();
+                if let Ok(raw) = fs::read_to_string(&data) {
+                    if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(&raw) {
+                        if let Some(obj) = parsed.as_object() {
+                            for (k, v) in obj {
+                                if let Some(s) = v.as_str() {
+                                    map.insert(k.clone(), s.to_string());
+                                }
+                            }
+                        } else if let Some(arr) = parsed.as_array() {
+                            for entry in arr {
+                                if let (Some(p), Some(a)) = (entry.get("prompt"), entry.get("answer")) {
+                                    if let (Some(ps), Some(asv)) = (p.as_str(), a.as_str()) {
+                                        map.insert(ps.to_string(), asv.to_string());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                map.insert(prompt, answer);
+                let json = serde_json::to_string_pretty(&map).unwrap();
+                fs::write(&data, json).expect("Failed to write training data");
+                println!("✓ Updated training data: {}", data);
+            }
         }
     } else {
         println!("Metroman - CoRe Plugin Manager");
         println!("Usage: metroman --out <filename>");
+        println!("       metroman train --data <file> --prompt <text> --answer <text>");
     }
 }

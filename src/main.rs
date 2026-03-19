@@ -6,10 +6,12 @@ mod diagnostics;
 mod ff;
 mod ir;
 mod jit;
+mod training_data;
 mod lexer;
 mod meta;
 mod parser;
 mod runtime;
+mod optimizer;
 
 #[cfg(not(target_arch = "wasm32"))]
 use clap::Parser as ClapParser;
@@ -435,7 +437,7 @@ fn main() {
         }
     });
 
-    let ir_program = debug_time!(timer, "IR Generation", {
+    let mut ir_program = debug_time!(timer, "IR Generation", {
         if verbose {
             println!("→ Generating IR...");
         }
@@ -485,6 +487,20 @@ fn main() {
 
         analyzer
     });
+
+    let opt_stats = debug_time!(timer, "IR Optimization", {
+        if verbose {
+            println!("→ Optimizing IR...");
+        }
+        optimizer::optimize_program(&mut ir_program)
+    });
+
+    if debug {
+        println!(
+            "[DEBUG] IR optimizations: const_folds={}, dead_removed={}, branches_simplified={}",
+            opt_stats.const_folds, opt_stats.removed_dead, opt_stats.simplified_branches
+        );
+    }
 
     match exec_mode {
         ExecMode::Native => {

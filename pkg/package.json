@@ -1,0 +1,15 @@
+{
+  "name": "forge",
+  "type": "module",
+  "version": "1.0.0",
+  "files": [
+    "forge_bg.wasm",
+    "forge.js",
+    "forge.d.ts"
+  ],
+  "main": "forge.js",
+  "types": "forge.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
