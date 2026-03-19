@@ -26,12 +26,12 @@
 <body>
     <div class="container">
         <div class="sidebar">
-            <h3>📁 Files</h3>
+            <h3>Files</h3>
             <input type="text" id="fileInput" placeholder="filename.fr">
             <button onclick="createFile()">Create File</button>
             <div id="fileList"></div>
 
-            <h3>📚 Examples</h3>
+            <h3>Examples</h3>
             <div class="file-item" onclick="loadExample('hello')">Hello World</div>
             <div class="file-item" onclick="loadExample('variables')">Variables</div>
         </div>
@@ -39,11 +39,11 @@
         <div class="main">
             <div class="editor">
                 <div id="loadingIndicator" style="background: #e74c3c; color: white; padding: 10px; margin-bottom: 10px; border-radius: 3px;">
-                    🔄 Loading WebAssembly module...
+                    Loading WebAssembly module...
                 </div>
-                <h3>✏️ Editor - <span id="currentFile">No file</span></h3>
-                <button onclick="runCode()">▶️ Run</button>
-                <button onclick="saveFile()">💾 Save</button>
+                <h3>Editor - <span id="currentFile">No file</span></h3>
+                <button onclick="runCode()">Run</button>
+                <button onclick="saveFile()">Save</button>
                 <textarea id="codeEditor" placeholder="Write CoRe code here...
 
 Example:
@@ -79,17 +79,17 @@ greet: &quot;Developer&quot;"></textarea>
         async function initCompiler() {
             try {
                 const loadingIndicator = document.getElementById('loadingIndicator');
-                loadingIndicator.innerHTML = '🔄 Loading WebAssembly module...';
+                loadingIndicator.innerHTML = 'Loading WebAssembly module...';
 
                 console.log('Loading WASM module...');
                 const init = await import('./pkg/core_wasm.js');
                 console.log('WASM module imported:', init);
 
-                loadingIndicator.innerHTML = '🔄 Initializing WASM...';
+                loadingIndicator.innerHTML = 'Initializing WASM...';
                 await init.default();
                 console.log('WASM initialized');
 
-                loadingIndicator.innerHTML = '🔄 Creating compiler instance...';
+                loadingIndicator.innerHTML = 'Creating compiler instance...';
                 const { CoreCompilerWasm } = await import('./pkg/core_wasm.js');
                 compiler = new CoreCompilerWasm();
                 console.log('CoreCompilerWasm created:', compiler);
@@ -100,24 +100,24 @@ greet: &quot;Developer&quot;"></textarea>
                 loadExample('hello');
 
                 loadingIndicator.style.background = '#27ae60';
-                loadingIndicator.innerHTML = '✅ CoRe WebAssembly compiler loaded successfully!';
+                loadingIndicator.innerHTML = 'CoRe WebAssembly compiler loaded successfully.';
                 setTimeout(() => {
                     loadingIndicator.style.display = 'none';
                 }, 3000);
 
                 document.getElementById('terminal').innerHTML +=
-                    '<div class="terminal-line" style="color: #00ff00;">✓ CoRe WebAssembly compiler loaded successfully!</div>' +
+                    '<div class="terminal-line" style="color: #00ff00;">CoRe WebAssembly compiler loaded successfully.</div>' +
                     '<div class="terminal-line">Type "help" for available commands</div>';
 
             } catch (error) {
                 console.error('Failed to initialize WASM:', error);
                 const loadingIndicator = document.getElementById('loadingIndicator');
                 loadingIndicator.style.background = '#e74c3c';
-                loadingIndicator.innerHTML = '❌ Failed to load WebAssembly: ' + error.message;
+                loadingIndicator.innerHTML = 'Failed to load WebAssembly: ' + error.message;
 
                 document.getElementById('output').textContent = 'Error loading WebAssembly: ' + error.message + '\n\nCheck browser console for details.';
                 document.getElementById('terminal').innerHTML +=
-                    '<div class="terminal-line" style="color: red;">✗ Failed to load WASM: ' + error.message + '</div>';
+                    '<div class="terminal-line" style="color: red;">Failed to load WASM: ' + error.message + '</div>';
             }
         }
 
@@ -195,7 +195,7 @@ say: message`;
 
                 const saveButton = event.target;
                 const originalText = saveButton.textContent;
-                saveButton.textContent = '✓ Saved';
+                saveButton.textContent = 'Saved';
                 saveButton.style.background = '#27ae60';
                 setTimeout(() => {
                     saveButton.textContent = originalText;
@@ -229,7 +229,7 @@ say: message`;
 
                 const runButton = event.target;
                 const originalText = runButton.textContent;
-                runButton.textContent = '✓ Executed';
+                runButton.textContent = 'Executed';
                 runButton.style.background = '#27ae60';
                 setTimeout(() => {
                     runButton.textContent = originalText;
@@ -302,7 +302,7 @@ greet: "Developer"`
                 const files = JSON.parse(filesJson);
                 const list = document.getElementById('fileList');
                 list.innerHTML = files.map(f =>
-                    `<div class="file-item" onclick="openFile('${f}')">📄 ${f}</div>`
+                    `<div class="file-item" onclick="openFile('${f}')">${f}</div>`
                 ).join('');
 
                 console.log('File list refreshed:', files);
@@ -364,6 +364,5 @@ greet: "Developer"`
     </script>
 </body>
 </html>
-
 
 
