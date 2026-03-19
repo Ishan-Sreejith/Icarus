@@ -1,32 +1,51 @@
-# Icarus
+# Icarus (formerly FrameForge)
 
-Icarus is a compact repository that keeps the core sources and build outputs for the project. It is set up to publish a simple project page through GitHub Pages.
+A Modular, High-Performance Language for Digital Architects.
 
-## Repository layout
+Icarus is a modern, colon-driven programming language built for clarity, speed, and deep customization. By separating logic and data into specialized "Frames" and "Forges," it allows developers to build scalable systems without the overhead of traditional OOP.
 
-The repository intentionally tracks only these folders:
+# Core Philosophy
+Structural Clarity: Clear separation between local, global, and high-performance (Fast) logic.
 
-- `src`
-- `dist`
-- `pkg`
-- `js`
-- `vm`
-- `wasm`
+Action-Oriented Syntax: Uses a consistent keyword: data flow that reads like a story.
 
-Everything else is ignored by design.
+Modular by Design: Everything is a component that can be forged, refined, and reused.
 
-## GitHub Pages
+# Quick Start
+Installation
+Bash
+./forge install
+Your First Program
+Create a file named main.fr:
 
-This repo includes a static `index.html` at the root. To enable GitHub Pages:
 
-1. Go to the repository Settings.
-2. Open Pages.
-3. Set the source to the `master` branch and the root folder (`/`).
+Language Tour
+# 1. Variables & Data Types
+FrameForge uses : for state assignment and for function parameters.
 
-After that, the page will be available at:
 
-`https://Ishan-Sreejith.github.io/Icarus/`
+var metadata = {"key": "value"} # Map
+var list = [1, 2, 3]            # List
+# 2. The Hierarchy of Logic (Functions)
+FrameForge categorizes functions based on their scope and performance needs.
+| Keyword | Type | Best For... |
+| :--- | :--- | :--- |
+| fn | Local | Standard logic within a module. |
+| fng | Global | Tools and utilities accessible everywhere. |
+| fnc | Fast | High-performance, math-heavy, or "hot" code paths. |
 
-## Notes
+Code snippet
+fnc add_fast: a, b {
+    return a + b
+}
+# 3. The Hierarchy of Data (Classes)
+Classes follow the same tiered logic as functions, allowing for memory optimization.
+| Keyword | Type | Description |
+| :--- | :--- | :--- |
+| cl | Standard | Typical object-oriented data structures. |
+| clg | Global | Persistent data that lives for the app's lifetime. |
+| clc | Fast/Compact | Optimized for low memory footprint and speed. |
 
-If you want to include additional files in the repo, update `.gitignore` to unignore them explicitly.
+
+# Development Status
+FrameForge is currently in active development.
