@@ -12,3 +12,5 @@
 !vm/**
 !wasm/
 !wasm/**
+!README.md
+!index.html
