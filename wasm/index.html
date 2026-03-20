@@ -1,368 +1,710 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoRe Language - WebAssembly IDE</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CoRe Language IDE</title>
     <style>
-        body { font-family: monospace; margin: 0; background: #2c3e50; color: white; }
-        .container { display: flex; height: 100vh; }
-        .sidebar { width: 250px; background: #34495e; padding: 20px; overflow-y: auto; }
-        .main { flex: 1; display: flex; flex-direction: column; }
-        .editor { flex: 1; padding: 20px; }
-        .terminal { height: 200px; background: #1a1a1a; color: #00ff00; padding: 15px; overflow-y: auto; }
-        textarea { width: 100%; height: 300px; background: #1e1e1e; color: #f8f8f2; border: none; padding: 10px; font-family: monospace; }
-        button { background: #3498db; color: white; border: none; padding: 8px 16px; margin: 5px; cursor: pointer; border-radius: 3px; }
-        button:hover { background: #2980b9; }
-        .file-item { background: #2c3e50; padding: 8px; margin: 5px 0; border-radius: 3px; cursor: pointer; }
-        .file-item:hover { background: #3498db; }
-        .file-item.active { background: #27ae60; }
-        input { background: #2c3e50; color: white; border: 1px solid #34495e; padding: 8px; margin: 5px 0; width: 100%; }
-        .terminal-line { margin: 2px 0; }
-        .output { background: #1e1e1e; padding: 10px; margin: 10px 0; border-radius: 3px; white-space: pre-wrap; }
-        h3 { color: #3498db; margin-bottom: 10px; }
+      :root {
+        --bg: #0f1115;
+        --panel: #161a22;
+        --panel-2: #1e2430;
+        --text: #e6e6e6;
+        --muted: #9aa3b2;
+        --accent: #4aa3ff;
+        --border: #2a3242;
+        --terminal-bg: #0b0d12;
+        --terminal-text: #d7f5dd;
+        --button-bg: #2a5bd7;
+        --button-text: #ffffff;
+        --danger: #d74b4b;
+        --font: "Georgia", "Times New Roman", serif;
+        --mono: "Menlo", "Consolas", "Courier New", monospace;
+        color-scheme: dark;
+      }
+
+      [data-theme="light"] {
+        --bg: #f3f4f7;
+        --panel: #ffffff;
+        --panel-2: #f0f2f7;
+        --text: #1f2328;
+        --muted: #5b6472;
+        --accent: #1f6feb;
+        --border: #d0d7de;
+        --terminal-bg: #0f1115;
+        --terminal-text: #d7f5dd;
+        --button-bg: #1f6feb;
+        --button-text: #ffffff;
+        --danger: #b42318;
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: 260px 1fr 280px;
+        grid-template-rows: 1fr 200px;
+        gap: 12px;
+        height: 100vh;
+        padding: 12px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        grid-row: 1 / span 2;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .main {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .editor-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .editor-header .file-name {
+        font-weight: 600;
+      }
+
+      .editor {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      textarea {
+        flex: 1;
+        width: 100%;
+        resize: none;
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px;
+        font-family: var(--mono);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .output {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px;
+        min-height: 90px;
+        font-family: var(--mono);
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+
+      .terminal {
+        grid-column: 2 / span 2;
+        background: var(--terminal-bg);
+        color: var(--terminal-text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        font-family: var(--mono);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .terminal-log {
+        flex: 1;
+        overflow-y: auto;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .terminal input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #0b0d12;
+        color: var(--terminal-text);
+        font-family: var(--mono);
+      }
+
+      .btn {
+        background: var(--button-bg);
+        color: var(--button-text);
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .btn.secondary {
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      .btn.danger {
+        background: var(--danger);
+      }
+
+      .file-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        overflow-y: auto;
+        max-height: 380px;
+      }
+
+      .file-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        cursor: pointer;
+      }
+
+      .file-item.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 1px var(--accent);
+      }
+
+      .file-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      .settings-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      select,
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 6px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--panel-2);
+        color: var(--text);
+      }
+
+      .status {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 1024px) {
+        .app {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto auto auto;
+          height: auto;
+        }
+        .sidebar {
+          grid-row: auto;
+        }
+        .terminal {
+          grid-column: auto;
+        }
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <div class="sidebar">
-            <h3>Files</h3>
-            <input type="text" id="fileInput" placeholder="filename.fr">
-            <button onclick="createFile()">Create File</button>
-            <div id="fileList"></div>
-
-            <h3>Examples</h3>
-            <div class="file-item" onclick="loadExample('hello')">Hello World</div>
-            <div class="file-item" onclick="loadExample('variables')">Variables</div>
+  </head>
+  <body>
+    <div class="app" data-theme="dark" id="appRoot">
+      <div class="panel sidebar">
+        <div>
+          <div class="label">File manager</div>
+          <input type="text" id="newFileName" placeholder="new_file.fr" />
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button class="btn" id="createFileBtn">Create</button>
+            <button class="btn secondary" id="refreshFilesBtn">Refresh</button>
+          </div>
         </div>
-
-        <div class="main">
-            <div class="editor">
-                <div id="loadingIndicator" style="background: #e74c3c; color: white; padding: 10px; margin-bottom: 10px; border-radius: 3px;">
-                    Loading WebAssembly module...
-                </div>
-                <h3>Editor - <span id="currentFile">No file</span></h3>
-                <button onclick="runCode()">Run</button>
-                <button onclick="saveFile()">Save</button>
-                <textarea id="codeEditor" placeholder="Write CoRe code here...
-
-Example:
-say: &quot;Hello, World!&quot;
-
-var name: &quot;CoRe&quot;
-say: &quot;Welcome to &quot; + name + &quot; Language&quot;
-
-fn greet: user {
-    say: &quot;Hello, &quot; + user + &quot;!&quot;
-}
-
-greet: &quot;Developer&quot;"></textarea>
-                <div id="output" class="output">Click 'Run' to execute your CoRe code. Output will appear here.</div>
-            </div>
-
-            <div class="terminal" id="terminal">
-                <div class="terminal-line">CoRe Language Terminal - Type 'help' for commands</div>
-                <input type="text" id="terminalInput" onkeypress="if(event.key==='Enter') executeCommand()"
-                       placeholder="Type command..." style="width: calc(100% - 10px); margin-top: 10px;">
-            </div>
+        <div>
+          <div class="label">Files</div>
+          <div class="file-list" id="fileList"></div>
         </div>
+        <div class="status" id="engineStatus">Engine status: loading</div>
+      </div>
+
+      <div class="panel main">
+        <div class="editor-header">
+          <div class="file-name" id="currentFileLabel">No file selected</div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn secondary" id="saveBtn">Save</button>
+            <button class="btn" id="runBtn">Run</button>
+          </div>
+        </div>
+        <div class="editor">
+          <textarea id="codeEditor" spellcheck="false"></textarea>
+          <div class="output" id="runOutput">Run output will appear here.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="label">Settings</div>
+        <div class="settings-group">
+          <label>
+            Theme
+            <select id="themeSelect">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </label>
+        </div>
+        <div class="settings-group">
+          <label>
+            Editor font size
+            <input type="number" id="fontSizeInput" min="12" max="22" value="14" />
+          </label>
+        </div>
+        <div class="settings-group">
+          <label>
+            Engine preference
+            <select id="engineSelect">
+              <option value="js">JavaScript engine (default)</option>
+              <option value="wasm">WebAssembly engine</option>
+            </select>
+          </label>
+        </div>
+        <div class="settings-group">
+          <div class="label">Terminal commands</div>
+          <div class="status">
+            help, ls, cat &lt;file&gt;, run &lt;file&gt;, open &lt;file&gt;, touch &lt;file&gt;,
+            rm &lt;file&gt;, mv &lt;old&gt; &lt;new&gt;, clear, core, metroman
+          </div>
+        </div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-log" id="terminalLog"></div>
+        <input type="text" id="terminalInput" placeholder="Type a command and press Enter" />
+      </div>
     </div>
 
     <script type="module">
-        let compiler, currentFileName = null;
+      import { CoReJsEngine } from "./core_js_engine.js";
 
-        window.onerror = function(msg, url, line) {
-            console.error('JavaScript Error:', msg, 'at', url, ':', line);
-            alert('JavaScript Error: ' + msg);
-        };
+      const appRoot = document.getElementById("appRoot");
+      const fileList = document.getElementById("fileList");
+      const editor = document.getElementById("codeEditor");
+      const output = document.getElementById("runOutput");
+      const currentFileLabel = document.getElementById("currentFileLabel");
+      const engineStatus = document.getElementById("engineStatus");
+      const terminalLog = document.getElementById("terminalLog");
+      const terminalInput = document.getElementById("terminalInput");
+      const themeSelect = document.getElementById("themeSelect");
+      const fontSizeInput = document.getElementById("fontSizeInput");
+      const engineSelect = document.getElementById("engineSelect");
 
-        async function initCompiler() {
-            try {
-                const loadingIndicator = document.getElementById('loadingIndicator');
-                loadingIndicator.innerHTML = 'Loading WebAssembly module...';
+      const jsEngine = new CoReJsEngine();
+      let wasmCompiler = null;
+      let wasmReady = false;
+      const files = new Map();
+      let currentFile = null;
 
-                console.log('Loading WASM module...');
-                const init = await import('./pkg/core_wasm.js');
-                console.log('WASM module imported:', init);
+      const settings = {
+        theme: localStorage.getItem("core_theme") || "dark",
+        fontSize: Number(localStorage.getItem("core_font_size") || 14),
+        engine: localStorage.getItem("core_engine") || "js",
+      };
 
-                loadingIndicator.innerHTML = 'Initializing WASM...';
-                await init.default();
-                console.log('WASM initialized');
+      function logTerminal(message) {
+        const line = document.createElement("div");
+        line.textContent = message;
+        terminalLog.appendChild(line);
+        terminalLog.scrollTop = terminalLog.scrollHeight;
+      }
 
-                loadingIndicator.innerHTML = 'Creating compiler instance...';
-                const { CoreCompilerWasm } = await import('./pkg/core_wasm.js');
-                compiler = new CoreCompilerWasm();
-                console.log('CoreCompilerWasm created:', compiler);
+      function setStatus() {
+        const wasmText = wasmReady ? "WASM ready" : "WASM not ready";
+        engineStatus.textContent = `Engine status: JS ready, ${wasmText}`;
+      }
 
-                compiler.save_file('test.fr', 'say: "Test"');
-                console.log('Test file saved');
+      function applySettings() {
+        appRoot.setAttribute("data-theme", settings.theme);
+        editor.style.fontSize = `${settings.fontSize}px`;
+        themeSelect.value = settings.theme;
+        fontSizeInput.value = settings.fontSize;
+        engineSelect.value = settings.engine;
+      }
 
-                loadExample('hello');
+      function saveSettings() {
+        localStorage.setItem("core_theme", settings.theme);
+        localStorage.setItem("core_font_size", String(settings.fontSize));
+        localStorage.setItem("core_engine", settings.engine);
+      }
 
-                loadingIndicator.style.background = '#27ae60';
-                loadingIndicator.innerHTML = 'CoRe WebAssembly compiler loaded successfully.';
-                setTimeout(() => {
-                    loadingIndicator.style.display = 'none';
-                }, 3000);
+      function listFiles() {
+        const names = Array.from(files.keys()).sort();
+        fileList.innerHTML = "";
+        for (const name of names) {
+          const row = document.createElement("div");
+          row.className = "file-item" + (name === currentFile ? " active" : "");
 
-                document.getElementById('terminal').innerHTML +=
-                    '<div class="terminal-line" style="color: #00ff00;">CoRe WebAssembly compiler loaded successfully.</div>' +
-                    '<div class="terminal-line">Type "help" for available commands</div>';
+          const label = document.createElement("div");
+          label.textContent = name;
+          label.style.flex = "1";
+          label.onclick = () => openFile(name);
 
-            } catch (error) {
-                console.error('Failed to initialize WASM:', error);
-                const loadingIndicator = document.getElementById('loadingIndicator');
-                loadingIndicator.style.background = '#e74c3c';
-                loadingIndicator.innerHTML = 'Failed to load WebAssembly: ' + error.message;
+          const actions = document.createElement("div");
+          actions.className = "file-actions";
 
-                document.getElementById('output').textContent = 'Error loading WebAssembly: ' + error.message + '\n\nCheck browser console for details.';
-                document.getElementById('terminal').innerHTML +=
-                    '<div class="terminal-line" style="color: red;">Failed to load WASM: ' + error.message + '</div>';
-            }
+          const renameBtn = document.createElement("button");
+          renameBtn.className = "btn secondary";
+          renameBtn.textContent = "Rename";
+          renameBtn.onclick = (e) => {
+            e.stopPropagation();
+            renameFile(name);
+          };
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "btn danger";
+          deleteBtn.textContent = "Delete";
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteFile(name);
+          };
+
+          actions.append(renameBtn, deleteBtn);
+          row.append(label, actions);
+          fileList.appendChild(row);
+        }
+      }
+
+      function syncToWasm(name) {
+        if (!wasmReady) return;
+        const content = files.get(name);
+        wasmCompiler.save_file(name, content || "");
+      }
+
+      function syncAllToWasm() {
+        if (!wasmReady) return;
+        for (const [name, content] of files.entries()) {
+          wasmCompiler.save_file(name, content);
+        }
+      }
+
+      function openFile(name) {
+        if (!files.has(name)) return;
+        currentFile = name;
+        editor.value = files.get(name);
+        currentFileLabel.textContent = name;
+        listFiles();
+      }
+
+      function createFile(name, content) {
+        if (!name) return;
+        if (!name.endsWith(".fr")) {
+          alert("Files must end with .fr");
+          return;
+        }
+        if (files.has(name)) {
+          alert("File already exists");
+          return;
+        }
+        files.set(name, content || "");
+        syncToWasm(name);
+        listFiles();
+        openFile(name);
+      }
+
+      function renameFile(oldName) {
+        const newName = prompt("Rename file to:", oldName);
+        if (!newName || newName === oldName) return;
+        if (!newName.endsWith(".fr")) {
+          alert("Files must end with .fr");
+          return;
+        }
+        if (files.has(newName)) {
+          alert("File already exists");
+          return;
+        }
+        const content = files.get(oldName) || "";
+        files.delete(oldName);
+        files.set(newName, content);
+        if (wasmReady) {
+          wasmCompiler.delete_file(oldName);
+          wasmCompiler.save_file(newName, content);
+        }
+        if (currentFile === oldName) {
+          currentFile = newName;
+          currentFileLabel.textContent = newName;
+        }
+        listFiles();
+      }
+
+      function deleteFile(name) {
+        if (!confirm(`Delete ${name}?`)) return;
+        files.delete(name);
+        if (wasmReady) {
+          wasmCompiler.delete_file(name);
+        }
+        if (currentFile === name) {
+          currentFile = null;
+          editor.value = "";
+          currentFileLabel.textContent = "No file selected";
+        }
+        listFiles();
+      }
+
+      function saveCurrent() {
+        if (!currentFile) {
+          alert("No file selected");
+          return;
+        }
+        files.set(currentFile, editor.value);
+        syncToWasm(currentFile);
+        listFiles();
+      }
+
+      function runCurrent() {
+        if (!currentFile) {
+          output.textContent = "No file selected.";
+          return;
+        }
+        saveCurrent();
+        try {
+          if (settings.engine === "wasm" && wasmReady) {
+            const out = wasmCompiler.execute(currentFile);
+            output.textContent = out || "Program executed successfully";
+          } else {
+            const out = jsEngine.execute(files.get(currentFile) || "");
+            output.textContent = out || "Program executed successfully";
+          }
+        } catch (err) {
+          output.textContent = `Error: ${err.message}`;
+        }
+      }
+
+      function handleCommand(input) {
+        const trimmed = input.trim();
+        if (!trimmed) return;
+        logTerminal(`$ ${trimmed}`);
+        const parts = trimmed.split(/\s+/);
+        const cmd = parts[0];
+        const args = parts.slice(1);
+
+        if (cmd === "clear") {
+          terminalLog.innerHTML = "";
+          return;
         }
 
-        window.createFile = () => {
-            try {
-                if (!compiler) {
-                    alert('Compiler not loaded yet. Please wait.');
-                    return;
-                }
-                const name = document.getElementById('fileInput').value.trim();
-                if (!name) {
-                    alert('Please enter a filename');
-                    return;
-                }
-                if (!name.endsWith('.fr')) {
-                    alert('File must end with .fr');
-                    return;
-                }
+        if (cmd === "help") {
+          logTerminal("Commands: help, ls, cat <file>, open <file>, run <file>, touch <file>, rm <file>, mv <old> <new>, clear, core, metroman");
+          return;
+        }
 
-                const defaultCode = `// New file: ${name}
-say: "Hello from ${name}!"
+        if (cmd === "ls") {
+          logTerminal(Array.from(files.keys()).sort().join("  ") || "(no files)");
+          return;
+        }
 
-var message: "Welcome to CoRe Language"
-say: message`;
+        if (cmd === "cat") {
+          const name = args[0];
+          if (!name || !files.has(name)) {
+            logTerminal("File not found.");
+            return;
+          }
+          logTerminal(files.get(name));
+          return;
+        }
 
-                compiler.save_file(name, defaultCode);
-                refreshFileList();
-                openFile(name);
-                document.getElementById('fileInput').value = '';
-                console.log('File created:', name);
-            } catch (error) {
-                console.error('Error creating file:', error);
-                alert('Error creating file: ' + error.message);
-            }
-        };
+        if (cmd === "open") {
+          const name = args[0];
+          if (!name || !files.has(name)) {
+            logTerminal("File not found.");
+            return;
+          }
+          openFile(name);
+          return;
+        }
 
-        window.openFile = (name) => {
-            try {
-                if (!compiler) {
-                    alert('Compiler not loaded yet');
-                    return;
-                }
-                currentFileName = name;
-                document.getElementById('currentFile').textContent = name;
-                document.getElementById('codeEditor').value = compiler.get_file_content(name);
+        if (cmd === "touch") {
+          const name = args[0];
+          if (!name) {
+            logTerminal("Usage: touch <file>");
+            return;
+          }
+          createFile(name, "");
+          return;
+        }
 
-                document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
-                const fileItems = document.querySelectorAll('.file-item');
-                fileItems.forEach(item => {
-                    if (item.textContent.includes(name)) {
-                        item.classList.add('active');
-                    }
-                });
+        if (cmd === "rm") {
+          const name = args[0];
+          if (!name || !files.has(name)) {
+            logTerminal("File not found.");
+            return;
+          }
+          files.delete(name);
+          if (wasmReady) wasmCompiler.delete_file(name);
+          if (currentFile === name) {
+            currentFile = null;
+            editor.value = "";
+            currentFileLabel.textContent = "No file selected";
+          }
+          listFiles();
+          logTerminal(`Deleted ${name}`);
+          return;
+        }
 
-                console.log('File opened:', name);
-            } catch (error) {
-                console.error('Error opening file:', error);
-                alert('Error opening file: ' + error.message);
-            }
-        };
+        if (cmd === "mv") {
+          const [oldName, newName] = args;
+          if (!oldName || !newName) {
+            logTerminal("Usage: mv <old> <new>");
+            return;
+          }
+          if (!files.has(oldName)) {
+            logTerminal("File not found.");
+            return;
+          }
+          if (files.has(newName)) {
+            logTerminal("Target file already exists.");
+            return;
+          }
+          const content = files.get(oldName);
+          files.delete(oldName);
+          files.set(newName, content);
+          if (wasmReady) {
+            wasmCompiler.delete_file(oldName);
+            wasmCompiler.save_file(newName, content);
+          }
+          if (currentFile === oldName) {
+            currentFile = newName;
+            currentFileLabel.textContent = newName;
+          }
+          listFiles();
+          logTerminal(`Renamed ${oldName} -> ${newName}`);
+          return;
+        }
 
-        window.saveFile = () => {
-            try {
-                if (!compiler) {
-                    alert('Compiler not loaded yet');
-                    return;
-                }
-                if (!currentFileName) {
-                    alert('No file open');
-                    return;
-                }
-                const content = document.getElementById('codeEditor').value;
-                compiler.save_file(currentFileName, content);
-                console.log('File saved:', currentFileName);
+        if (cmd === "run") {
+          const name = args[0] || currentFile;
+          if (!name || !files.has(name)) {
+            logTerminal("File not found.");
+            return;
+          }
+          currentFile = name;
+          editor.value = files.get(name);
+          currentFileLabel.textContent = name;
+          runCurrent();
+          logTerminal("Executed.");
+          return;
+        }
 
-                const saveButton = event.target;
-                const originalText = saveButton.textContent;
-                saveButton.textContent = 'Saved';
-                saveButton.style.background = '#27ae60';
-                setTimeout(() => {
-                    saveButton.textContent = originalText;
-                    saveButton.style.background = '#3498db';
-                }, 1000);
+        if (cmd === "core" || cmd === "metroman") {
+          if (!wasmReady) {
+            logTerminal("WASM engine not available. Command requires WASM.");
+            return;
+          }
+          syncAllToWasm();
+          const res = wasmCompiler.execute_command(trimmed);
+          logTerminal(res || "(no output)");
+          return;
+        }
 
-            } catch (error) {
-                console.error('Error saving file:', error);
-                alert('Error saving file: ' + error.message);
-            }
-        };
+        logTerminal("Unknown command. Type help.");
+      }
 
-        window.runCode = () => {
-            try {
-                if (!compiler) {
-                    alert('Compiler not loaded yet');
-                    return;
-                }
-                if (!currentFileName) {
-                    alert('No file open');
-                    return;
-                }
+      async function initWasm() {
+        try {
+          const mod = await import("./pkg/core_wasm.js");
+          await mod.default();
+          const { CoreCompilerWasm } = await import("./pkg/core_wasm.js");
+          wasmCompiler = new CoreCompilerWasm();
+          wasmReady = true;
+          syncAllToWasm();
+          setStatus();
+        } catch (err) {
+          wasmReady = false;
+          setStatus();
+          logTerminal(`WASM init failed: ${err.message}`);
+        }
+      }
 
-                saveFile();
+      document.getElementById("createFileBtn").onclick = () => {
+        const name = document.getElementById("newFileName").value.trim();
+        createFile(name, "");
+        document.getElementById("newFileName").value = "";
+      };
 
-                console.log('Executing file:', currentFileName);
-                const output = compiler.execute(currentFileName);
-                console.log('Execution output:', output);
+      document.getElementById("refreshFilesBtn").onclick = () => listFiles();
+      document.getElementById("saveBtn").onclick = saveCurrent;
+      document.getElementById("runBtn").onclick = runCurrent;
 
-                document.getElementById('output').textContent = output;
+      terminalInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          handleCommand(terminalInput.value);
+          terminalInput.value = "";
+        }
+      });
 
-                const runButton = event.target;
-                const originalText = runButton.textContent;
-                runButton.textContent = 'Executed';
-                runButton.style.background = '#27ae60';
-                setTimeout(() => {
-                    runButton.textContent = originalText;
-                    runButton.style.background = '#3498db';
-                }, 1000);
+      themeSelect.addEventListener("change", () => {
+        settings.theme = themeSelect.value;
+        applySettings();
+        saveSettings();
+      });
 
-            } catch (error) {
-                console.error('Error running code:', error);
-                document.getElementById('output').textContent = 'Error: ' + error.message;
-            }
-        };
+      fontSizeInput.addEventListener("change", () => {
+        settings.fontSize = Number(fontSizeInput.value);
+        applySettings();
+        saveSettings();
+      });
 
-        window.loadExample = (type) => {
-            try {
-                if (!compiler) {
-                    console.log('Compiler not ready, will load example when ready');
-                    return;
-                }
+      engineSelect.addEventListener("change", () => {
+        settings.engine = engineSelect.value;
+        saveSettings();
+      });
 
-                const examples = {
-                    hello: {
-                        name: 'hello.fr',
-                        code: `say: "Hello, CoRe Language!"
-say: "Running in WebAssembly!"
+      function bootstrap() {
+        applySettings();
+        const sample = jsEngine.get_sample_code();
+        createFile("main.fr", sample);
+        openFile("main.fr");
+        logTerminal("CoRe IDE ready. Type help for commands.");
+        setStatus();
+        initWasm();
+      }
 
-var name: "World"
-say: "Hello, " + name + "!"
-
-var x: 42
-var y: 8
-say: "Math result: " + (x + y)`
-                    },
-                    variables: {
-                        name: 'variables.fr',
-                        code: `var x: 10
-var y: 20
-var sum: x + y
-say: "Sum: " + sum
-
-var text: "CoRe"
-say: "Language: " + text
-
-fn greet: name {
-    say: "Hello, " + name + "!"
-}
-
-greet: "Developer"`
-                    }
-                };
-
-                const ex = examples[type];
-                if (ex) {
-                    compiler.save_file(ex.name, ex.code);
-                    refreshFileList();
-                    openFile(ex.name);
-                    console.log('Example loaded:', type);
-                }
-            } catch (error) {
-                console.error('Error loading example:', error);
-            }
-        };
-
-        window.refreshFileList = () => {
-            try {
-                if (!compiler) return;
-
-                const filesJson = compiler.get_files_json();
-                console.log('Files JSON:', filesJson);
-
-                const files = JSON.parse(filesJson);
-                const list = document.getElementById('fileList');
-                list.innerHTML = files.map(f =>
-                    `<div class="file-item" onclick="openFile('${f}')">${f}</div>`
-                ).join('');
-
-                console.log('File list refreshed:', files);
-            } catch (error) {
-                console.error('Error refreshing file list:', error);
-            }
-        };
-
-        window.executeCommand = () => {
-            try {
-                if (!compiler) {
-                    alert('Compiler not loaded yet');
-                    return;
-                }
-
-                const input = document.getElementById('terminalInput');
-                const command = input.value.trim();
-                if (!command) return;
-
-                const terminal = document.getElementById('terminal');
-                terminal.innerHTML += `<div class="terminal-line">$ ${command}</div>`;
-
-                console.log('Executing command:', command);
-                const output = compiler.execute_command(command);
-                console.log('Command output:', output);
-
-                if (output === 'CLEAR_TERMINAL') {
-                    terminal.innerHTML = '<div class="terminal-line">CoRe Language Terminal - Type \'help\' for commands</div>';
-                } else if (output) {
-                    const lines = output.split('\n');
-                    lines.forEach(line => {
-                        if (line.trim()) {
-                            terminal.innerHTML += `<div class="terminal-line">${line}</div>`;
-                        }
-                    });
-                }
-
-                input.value = '';
-                terminal.scrollTop = terminal.scrollHeight;
-
-                if (command.includes('core --out') || command.includes('metroman --out')) {
-                    refreshFileList();
-                }
-
-            } catch (error) {
-                console.error('Error executing command:', error);
-                const terminal = document.getElementById('terminal');
-                terminal.innerHTML += `<div class="terminal-line" style="color: red;">Error: ${error.message}</div>`;
-                terminal.scrollTop = terminal.scrollHeight;
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Page loaded, initializing compiler...');
-            initCompiler();
-        });
-
-        initCompiler();
+      bootstrap();
     </script>
-</body>
+  </body>
 </html>
-
-
