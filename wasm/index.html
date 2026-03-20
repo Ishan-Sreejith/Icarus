@@ -52,8 +52,8 @@
 
       .app {
         display: grid;
-        grid-template-columns: 260px 1fr 280px;
-        grid-template-rows: 1fr 200px;
+        grid-template-columns: 1fr;
+        grid-template-rows: 52px 1fr;
         gap: 12px;
         height: 100vh;
         padding: 12px;
@@ -65,13 +65,6 @@
         border-radius: 8px;
         padding: 12px;
         overflow: hidden;
-      }
-
-      .sidebar {
-        grid-row: 1 / span 2;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
       }
 
       .main {
@@ -123,36 +116,6 @@
         white-space: pre-wrap;
       }
 
-      .terminal {
-        grid-column: 2 / span 2;
-        background: var(--terminal-bg);
-        color: var(--terminal-text);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 12px;
-        font-family: var(--mono);
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .terminal-log {
-        flex: 1;
-        overflow-y: auto;
-        font-size: 13px;
-        line-height: 1.4;
-      }
-
-      .terminal input {
-        width: 100%;
-        padding: 8px;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        background: #0b0d12;
-        color: var(--terminal-text);
-        font-family: var(--mono);
-      }
-
       .btn {
         background: var(--button-bg);
         color: var(--button-text);
@@ -171,6 +134,93 @@
 
       .btn.danger {
         background: var(--danger);
+      }
+
+      .label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      .status {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .toolbar {
+        background: linear-gradient(180deg, #1b202b 0%, #151922 100%);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .toolbar-left,
+      .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .title {
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+
+      .pill {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(8, 10, 14, 0.6);
+        z-index: 20;
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-card {
+        width: min(620px, 92vw);
+        max-height: 86vh;
+        overflow: auto;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .modal-title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
       }
 
       .file-list {
@@ -203,17 +253,10 @@
         gap: 6px;
       }
 
-      .label {
-        font-size: 12px;
-        color: var(--muted);
-        margin-bottom: 6px;
-      }
-
       .settings-group {
         display: flex;
         flex-direction: column;
         gap: 6px;
-        margin-bottom: 12px;
       }
 
       select,
@@ -227,42 +270,57 @@
         color: var(--text);
       }
 
-      .status {
-        font-size: 12px;
-        color: var(--muted);
+      .terminal {
+        background: var(--terminal-bg);
+        color: var(--terminal-text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        font-family: var(--mono);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .terminal-log {
+        flex: 1;
+        overflow-y: auto;
+        font-size: 13px;
+        line-height: 1.4;
+        max-height: 260px;
+      }
+
+      .terminal input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #0b0d12;
+        color: var(--terminal-text);
+        font-family: var(--mono);
       }
 
       @media (max-width: 1024px) {
         .app {
           grid-template-columns: 1fr;
-          grid-template-rows: auto auto auto auto;
+          grid-template-rows: auto auto;
           height: auto;
-        }
-        .sidebar {
-          grid-row: auto;
-        }
-        .terminal {
-          grid-column: auto;
         }
       }
     </style>
   </head>
   <body>
     <div class="app" data-theme="dark" id="appRoot">
-      <div class="panel sidebar">
-        <div>
-          <div class="label">File manager</div>
-          <input type="text" id="newFileName" placeholder="new_file.fr" />
-          <div style="display: flex; gap: 8px; margin-top: 8px;">
-            <button class="btn" id="createFileBtn">Create</button>
-            <button class="btn secondary" id="refreshFilesBtn">Refresh</button>
-          </div>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="title">CoRe IDE</div>
+          <div class="pill" id="engineStatus">Engine status: loading</div>
         </div>
-        <div>
-          <div class="label">Files</div>
-          <div class="file-list" id="fileList"></div>
+        <div class="toolbar-right">
+          <button class="btn secondary" id="openFilesBtn">Files</button>
+          <button class="btn secondary" id="openTerminalBtn">Terminal</button>
+          <button class="btn secondary" id="openSettingsBtn">Settings</button>
         </div>
-        <div class="status" id="engineStatus">Engine status: loading</div>
       </div>
 
       <div class="panel main">
@@ -279,44 +337,84 @@
         </div>
       </div>
 
-      <div class="panel">
-        <div class="label">Settings</div>
-        <div class="settings-group">
-          <label>
-            Theme
-            <select id="themeSelect">
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-            </select>
-          </label>
-        </div>
-        <div class="settings-group">
-          <label>
-            Editor font size
-            <input type="number" id="fontSizeInput" min="12" max="22" value="14" />
-          </label>
-        </div>
-        <div class="settings-group">
-          <label>
-            Engine preference
-            <select id="engineSelect">
-              <option value="js">JavaScript engine (default)</option>
-              <option value="wasm">WebAssembly engine</option>
-            </select>
-          </label>
-        </div>
-        <div class="settings-group">
-          <div class="label">Terminal commands</div>
-          <div class="status">
-            help, ls, cat &lt;file&gt;, run &lt;file&gt;, open &lt;file&gt;, touch &lt;file&gt;,
-            rm &lt;file&gt;, mv &lt;old&gt; &lt;new&gt;, clear, core, metroman
+      <div class="modal" id="filesModal">
+        <div class="modal-card">
+          <div class="modal-header">
+            <div class="modal-title">File Manager</div>
+            <button class="btn secondary" id="closeFilesBtn">Close</button>
+          </div>
+          <div class="modal-body">
+            <div>
+              <div class="label">Create file</div>
+              <input type="text" id="newFileName" placeholder="new_file.fr" />
+              <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button class="btn" id="createFileBtn">Create</button>
+                <button class="btn secondary" id="refreshFilesBtn">Refresh</button>
+              </div>
+            </div>
+            <div>
+              <div class="label">Files</div>
+              <div class="file-list" id="fileList"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="terminal">
-        <div class="terminal-log" id="terminalLog"></div>
-        <input type="text" id="terminalInput" placeholder="Type a command and press Enter" />
+      <div class="modal" id="settingsModal">
+        <div class="modal-card">
+          <div class="modal-header">
+            <div class="modal-title">Settings</div>
+            <button class="btn secondary" id="closeSettingsBtn">Close</button>
+          </div>
+          <div class="modal-body">
+            <div class="settings-group">
+              <label>
+                Theme
+                <select id="themeSelect">
+                  <option value="dark">Dark</option>
+                  <option value="light">Light</option>
+                </select>
+              </label>
+            </div>
+            <div class="settings-group">
+              <label>
+                Editor font size
+                <input type="number" id="fontSizeInput" min="12" max="22" value="14" />
+              </label>
+            </div>
+            <div class="settings-group">
+              <label>
+                Engine preference
+                <select id="engineSelect">
+                  <option value="js">JavaScript engine (default)</option>
+                  <option value="wasm">WebAssembly engine</option>
+                </select>
+              </label>
+            </div>
+            <div class="settings-group">
+              <div class="label">Terminal commands</div>
+              <div class="status">
+                help, ls, cat &lt;file&gt;, run &lt;file&gt;, open &lt;file&gt;, touch &lt;file&gt;,
+                rm &lt;file&gt;, mv &lt;old&gt; &lt;new&gt;, clear, core, metroman
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal" id="terminalModal">
+        <div class="modal-card">
+          <div class="modal-header">
+            <div class="modal-title">Terminal</div>
+            <button class="btn secondary" id="closeTerminalBtn">Close</button>
+          </div>
+          <div class="modal-body">
+            <div class="terminal">
+              <div class="terminal-log" id="terminalLog"></div>
+              <input type="text" id="terminalInput" placeholder="Type a command and press Enter" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -334,6 +432,9 @@
       const themeSelect = document.getElementById("themeSelect");
       const fontSizeInput = document.getElementById("fontSizeInput");
       const engineSelect = document.getElementById("engineSelect");
+      const filesModal = document.getElementById("filesModal");
+      const settingsModal = document.getElementById("settingsModal");
+      const terminalModal = document.getElementById("terminalModal");
 
       const jsEngine = new CoReJsEngine();
       let wasmCompiler = null;
@@ -669,6 +770,12 @@
       document.getElementById("refreshFilesBtn").onclick = () => listFiles();
       document.getElementById("saveBtn").onclick = saveCurrent;
       document.getElementById("runBtn").onclick = runCurrent;
+      document.getElementById("openFilesBtn").onclick = () => filesModal.classList.add("open");
+      document.getElementById("closeFilesBtn").onclick = () => filesModal.classList.remove("open");
+      document.getElementById("openSettingsBtn").onclick = () => settingsModal.classList.add("open");
+      document.getElementById("closeSettingsBtn").onclick = () => settingsModal.classList.remove("open");
+      document.getElementById("openTerminalBtn").onclick = () => terminalModal.classList.add("open");
+      document.getElementById("closeTerminalBtn").onclick = () => terminalModal.classList.remove("open");
 
       terminalInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
