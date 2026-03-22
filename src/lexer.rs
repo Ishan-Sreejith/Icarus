@@ -18,6 +18,9 @@ pub enum Token {
     #[token("async")]
     Async,
 
+    #[token("unsafe")]
+    Unsafe,
+
     #[token("mod")]
     Mod,
 

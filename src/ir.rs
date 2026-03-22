@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum IrInstr {
@@ -257,12 +258,13 @@ pub struct IrBuilder {
     label_counter: usize,
     var_types: HashMap<String, ValueType>,
     structs: HashSet<String>,
-    import_cache: HashMap<PathBuf, Program>,
+    import_cache: HashMap<PathBuf, (SystemTime, Program)>,
     processed_modules: HashSet<PathBuf>,
     import_stack: Vec<PathBuf>,
     try_stack: Vec<(String, String)>, // (catch_label, err_var)
     trait_methods: HashMap<String, Vec<String>>,
     known_functions: HashMap<String, usize>,
+    resolve_cache: HashMap<(PathBuf, String), PathBuf>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -290,6 +292,7 @@ impl IrBuilder {
             try_stack: Vec::new(),
             trait_methods: HashMap::new(),
             known_functions: HashMap::new(),
+            resolve_cache: HashMap::new(),
         }
     }
 
@@ -310,12 +313,12 @@ impl IrBuilder {
         program: &Program,
         entry_file: Option<&Path>,
     ) -> Result<IrProgram, String> {
-        self.import_cache.clear();
         self.processed_modules.clear();
         self.import_stack.clear();
         self.try_stack.clear();
         self.trait_methods.clear();
         self.known_functions.clear();
+        self.resolve_cache.clear();
 
         let mut ir_program = IrProgram {
             functions: HashMap::new(),
@@ -449,13 +452,26 @@ impl IrBuilder {
 
         self.import_stack.push(canonical.clone());
 
-        let imported_program = if let Some(p) = self.import_cache.get(&canonical).cloned() {
-            p
-        } else {
-            let p = parse_core_file(&canonical)
-                .map_err(|e| format!("Failed to import '{}': {}", canonical.display(), e))?;
-            self.import_cache.insert(canonical.clone(), p.clone());
-            p
+        let imported_program = match self.import_cache.get(&canonical) {
+            Some((cached_mtime, cached_program)) => {
+                let mtime = file_mtime(&canonical)?;
+                if &mtime == cached_mtime {
+                    cached_program.clone()
+                } else {
+                    let parsed = parse_core_file(&canonical)
+                        .map_err(|e| format!("Failed to import '{}': {}", canonical.display(), e))?;
+                    self.import_cache.insert(canonical.clone(), (mtime, parsed.clone()));
+                    parsed
+                }
+            }
+            None => {
+                let mtime = file_mtime(&canonical)?;
+                let parsed = parse_core_file(&canonical)
+                    .map_err(|e| format!("Failed to import '{}': {}", canonical.display(), e))?;
+                self.import_cache
+                    .insert(canonical.clone(), (mtime, parsed.clone()));
+                parsed
+            }
         };
 
         self.process_program(&imported_program, &canonical, ir_program)?;
@@ -466,49 +482,62 @@ impl IrBuilder {
     }
 
     fn resolve_import_path(
-        &self,
+        &mut self,
         import_str: &str,
         current_file: &Path,
     ) -> Result<PathBuf, String> {
         let raw = PathBuf::from(import_str);
         let base_dir = current_file.parent().unwrap_or_else(|| Path::new("."));
 
-        if raw.extension().is_some() {
+        if let Some(cached) = self
+            .resolve_cache
+            .get(&(base_dir.to_path_buf(), import_str.to_string()))
+        {
+            return Ok(cached.clone());
+        }
+
+        let result: PathBuf = if raw.extension().is_some() {
             if raw.is_absolute() {
-                return Ok(raw);
+                raw
+            } else {
+                base_dir.join(raw)
             }
-            return Ok(base_dir.join(raw));
-        }
+        } else {
+            let mut fr = raw.clone();
+            fr.set_extension("fr");
+            let mut mtro = raw;
+            mtro.set_extension("mtro");
 
-        let mut fr = raw.clone();
-        fr.set_extension("fr");
-        let mut mtro = raw;
-        mtro.set_extension("mtro");
-
-        if fr.is_absolute() {
-            if fr.exists() {
-                return Ok(fr);
+            if fr.is_absolute() {
+                if fr.exists() {
+                    fr
+                } else if mtro.exists() {
+                    mtro
+                } else {
+                    fr
+                }
+            } else {
+                let fr_rel = base_dir.join(&fr);
+                if fr_rel.exists() {
+                    fr_rel
+                } else {
+                    let mtro_rel = base_dir.join(&mtro);
+                    if mtro_rel.exists() {
+                        mtro_rel
+                    } else {
+                        fr_rel
+                    }
+                }
             }
-            if mtro.exists() {
-                return Ok(mtro);
-            }
-            return Ok(fr);
-        }
+        };
 
-        let fr_rel = base_dir.join(&fr);
-        if fr_rel.exists() {
-            return Ok(fr_rel);
-        }
-        let mtro_rel = base_dir.join(&mtro);
-        if mtro_rel.exists() {
-            return Ok(mtro_rel);
-        }
-
-        Ok(fr_rel)
+        self.resolve_cache
+            .insert((base_dir.to_path_buf(), import_str.to_string()), result.clone());
+        Ok(result)
     }
 
     fn build_function(&mut self, func: &FnDef) -> Result<IrFunction, String> {
-        let mut instructions = Vec::new();
+        let mut instructions = Vec::with_capacity(func.body.len().saturating_mul(2).max(4));
 
         for param in &func.params {
             self.var_types.insert(param.clone(), ValueType::Unknown);
@@ -669,6 +698,12 @@ impl IrBuilder {
                 self.build_expr(expr, instrs)?;
             }
             Stmt::Block(stmts) => {
+                for stmt in stmts {
+                    self.build_statement(stmt, instrs)?;
+                }
+            }
+            Stmt::Unsafe(stmts) => {
+                // Unsafe currently lowers like a scoped block; actual low-level hooks can be added later.
                 for stmt in stmts {
                     self.build_statement(stmt, instrs)?;
                 }
@@ -1460,4 +1495,10 @@ say: x
         let ir = builder.build(&program, Some(&dir.join("main.fr"))).unwrap();
         assert!(ir.functions.contains_key("plug"));
     }
+}
+
+fn file_mtime(path: &Path) -> Result<SystemTime, String> {
+    fs::metadata(path)
+        .and_then(|m| m.modified())
+        .map_err(|e| format!("Failed to read metadata for '{}': {}", path.display(), e))
 }

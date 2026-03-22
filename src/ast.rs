@@ -84,6 +84,7 @@ pub enum Stmt {
     Expr(Expr),
 
     Block(Vec<Stmt>),
+    Unsafe(Vec<Stmt>),
 
     If(Expr, Vec<Stmt>, Option<Vec<Stmt>>),
 
@@ -113,6 +114,7 @@ pub struct FnDef {
     pub params: Vec<String>,
     pub body: Vec<Stmt>,
     pub is_async: bool,
+    pub is_unsafe: bool,
     pub fn_type: FnType,
 }
 

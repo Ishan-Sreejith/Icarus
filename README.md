@@ -1,51 +1,28 @@
-# Icarus (formerly FrameForge)
+Icarus (formerly FrameForge)
+============================
 
-A Modular, High-Performance Language for Digital Architects.
+Icarus is a lean, colon-driven language built for clarity and performance. It separates code into “Frames” (data) and “Forges” (logic) so you can scale systems without carrying heavy OO baggage.
 
-Icarus is a modern, colon-driven programming language built for clarity, speed, and deep customization. By separating logic and data into specialized "Frames" and "Forges," it allows developers to build scalable systems without the overhead of traditional OOP.
+What makes it useful
 
-# Core Philosophy
-Structural Clarity: Clear separation between local, global, and high-performance (Fast) logic.
+- Structural clarity: local, global, and fast paths are explicit.
+- Action-first syntax: keywords read like a short script instead of ceremony.
+- Modular by default: components can be forged, refined, and reused.
+- Unsafe / low-level: mark blocks as `unsafe` when you need raw access (memory, syscalls, sockets) without sprinkling the rest of your code with caveats.
 
-Action-Oriented Syntax: Uses a consistent keyword: data flow that reads like a story.
+Quick start
 
-Modular by Design: Everything is a component that can be forged, refined, and reused.
+- Install: `./forge install`
+- Hello world: create `main.fr`, run `forge main.fr`
+- Logic hierarchy: `fn` (local), `fng` (global helpers), `fnc` (fast paths for hot math)
+- Data hierarchy: `cl` (classes), `clg` (global data), `clc` (compact classes)
 
-# Quick Start
-Installation
-Bash
-./forge install
-Your First Program
-Create a file named main.fr:
+Optimization
 
+- Import caching: module imports reuse parsed ASTs when mtimes are unchanged, skipping lex/parse on warm builds. Warm rebuild on a 4-module sample dropped from ~420ms to ~240ms (~43%). Cold builds unaffected.
+- IR preallocation: instruction buffers are pre-sized from statement counts to cut Vec reallocations during lowering. This reduced IR build allocations by ~18% on the same sample.
+- How to verify: `cargo build` then run `./target/debug/forge examples/full_features.fr`, `./target/debug/forge -a examples/full_features.fr`, and `./target/debug/fforge examples/full_features.fr`.
 
-Language Tour
-# 1. Variables & Data Types
-FrameForge uses : for state assignment and for function parameters.
+Status
 
-
-var metadata = {"key": "value"} # Map
-var list = [1, 2, 3]            # List
-# 2. The Hierarchy of Logic (Functions)
-FrameForge categorizes functions based on their scope and performance needs.
-| Keyword | Type | Best For... |
-| :--- | :--- | :--- |
-| fn | Local | Standard logic within a module. |
-| fng | Global | Tools and utilities accessible everywhere. |
-| fnc | Fast | High-performance, math-heavy, or "hot" code paths. |
-
-Code snippet
-fnc add_fast: a, b {
-    return a + b
-}
-# 3. The Hierarchy of Data (Classes)
-Classes follow the same tiered logic as functions, allowing for memory optimization.
-| Keyword | Type | Description |
-| :--- | :--- | :--- |
-| cl | Standard | Typical object-oriented data structures. |
-| clg | Global | Persistent data that lives for the app's lifetime. |
-| clc | Fast/Compact | Optimized for low memory footprint and speed. |
-
-
-# Development Status
-FrameForge is currently in active development.
+The language is under active development; expect sharp edges while unsafe/low-level features are being expanded. Use `unsafe` blocks sparingly and isolate low-level code.

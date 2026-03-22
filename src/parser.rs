@@ -61,12 +61,29 @@ impl Parser {
 
     fn parse_top_level(&mut self) -> Result<TopLevel, String> {
         match self.current() {
-            Some(Token::Fn) | Some(Token::Async) => {
-                Ok(TopLevel::Function(self.parse_function(FnType::Normal)?))
+            Some(Token::Unsafe) => {
+                self.advance();
+                match self.current() {
+                    Some(Token::Fn) | Some(Token::Async) => {
+                        Ok(TopLevel::Function(self.parse_function(FnType::Normal, true)?))
+                    }
+                    Some(Token::Fng) => Ok(TopLevel::Function(self.parse_function(
+                        FnType::Global,
+                        true,
+                    )?)),
+                    Some(Token::Fnc) => Ok(TopLevel::Function(self.parse_function(
+                        FnType::Precompiled,
+                        true,
+                    )?)),
+                    _ => self.error("Expected function after unsafe".to_string()),
+                }
             }
-            Some(Token::Fng) => Ok(TopLevel::Function(self.parse_function(FnType::Global)?)),
+            Some(Token::Fn) | Some(Token::Async) => {
+                Ok(TopLevel::Function(self.parse_function(FnType::Normal, false)?))
+            }
+            Some(Token::Fng) => Ok(TopLevel::Function(self.parse_function(FnType::Global, false)?)),
             Some(Token::Fnc) => Ok(TopLevel::Function(
-                self.parse_function(FnType::Precompiled)?,
+                self.parse_function(FnType::Precompiled, false)?,
             )),
             Some(Token::Struct)
             | Some(Token::Class)
@@ -102,7 +119,7 @@ impl Parser {
         }
     }
 
-    fn parse_function(&mut self, fn_type: FnType) -> Result<FnDef, String> {
+    fn parse_function(&mut self, fn_type: FnType, is_unsafe: bool) -> Result<FnDef, String> {
         let is_async = if matches!(self.current(), Some(Token::Async)) {
             self.advance();
             true
@@ -158,6 +175,7 @@ impl Parser {
             params,
             body,
             is_async,
+            is_unsafe,
             fn_type,
         })
     }
@@ -175,6 +193,16 @@ impl Parser {
             return Ok(Stmt::Assign(Expr::Identifier(name), value));
         }
         match self.current() {
+            Some(Token::Unsafe) => {
+                self.advance();
+                self.expect(Token::LBrace)?;
+                let mut stmts = Vec::new();
+                while !matches!(self.current(), Some(Token::RBrace)) {
+                    stmts.push(self.parse_statement()?);
+                }
+                self.expect(Token::RBrace)?;
+                Ok(Stmt::Unsafe(stmts))
+            }
             Some(Token::Var) => self.parse_var_decl(),
             Some(Token::Say) => self.parse_say(),
             Some(Token::Return) => self.parse_return(),
@@ -197,7 +225,8 @@ impl Parser {
                 }
             }
             Some(Token::Fn) | Some(Token::Async) => {
-                let func = self.parse_function(FnType::Normal)?;
+                let func = self.parse_function(FnType::Normal, false)?;
+
                 Ok(Stmt::Expr(Expr::Identifier(func.name)))
             }
             _ => {
@@ -452,8 +481,21 @@ impl Parser {
         let mut methods = Vec::new();
         while !matches!(self.current(), Some(Token::RBrace)) {
             match self.current() {
+                Some(Token::Unsafe) => {
+                    self.advance();
+                    match self.current() {
+                        Some(Token::Fn) | Some(Token::Async) => {
+                            methods.push(self.parse_function(FnType::Normal, true)?);
+                        }
+                        _ => {
+                            return Err(
+                                "Only function definitions are allowed inside impl blocks".to_string(),
+                            )
+                        }
+                    }
+                }
                 Some(Token::Fn) | Some(Token::Async) => {
-                    methods.push(self.parse_function(FnType::Normal)?);
+                    methods.push(self.parse_function(FnType::Normal, false)?);
                 }
                 _ => {
                     return Err(

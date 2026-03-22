@@ -1,19 +1,46 @@
+# Ignore everything by default
 *
+
+# Keep control files
 !.gitignore
+!Cargo.toml
+!Cargo.lock
+
+# Root README is kept; everything else .md/.txt ignored
+!README.md
+*.md
+*.txt
+
+# Ignore language samples/tests and generated assembly
+*.fr
+*.s
+examples/
+docs/
+deploy/
+profiles/
+training_data.json
+
+# Ignore build artifacts and IDE/cache state
+/target/
+vm/target/
+.idea/
+.proxyai/
+.DS_Store
+
+# Keep main project source and web/pkg assets
 !src/
 !src/**
-!dist/
-!dist/**
-!pkg/
-!pkg/**
 !js/
 !js/**
-!vm/
-!vm/**
+!pkg/
+!pkg/**
 !wasm/
 !wasm/**
-!README.md
-!index.html
-!.nojekyll
-!.github/
-!.github/**
+
+# Keep VM sources but not its targets
+!vm/
+!vm/Cargo.toml
+!vm/Cargo.lock
+!vm/src/
+!vm/src/**
+!vm/build.rs
