@@ -3,6 +3,10 @@ Icarus (formerly FrameForge)
 
 Icarus is a lean, colon-driven language built for modularity and performance.
 
+Live demo
+
+- https://ishan-sreejith.github.io/FrameForge/ (served from the `deploy/` folder)
+
 What makes it useful
 
 - Structural clarity: local, global, and fast paths are explicit.
