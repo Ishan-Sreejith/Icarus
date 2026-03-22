@@ -1,7 +1,7 @@
 Icarus (formerly FrameForge)
 ============================
 
-Icarus is a lean, colon-driven language built for clarity and performance. It separates code into “Frames” (data) and “Forges” (logic) so you can scale systems without carrying heavy OO baggage.
+Icarus is a lean, colon-driven language built for modularity and performance.
 
 What makes it useful
 
