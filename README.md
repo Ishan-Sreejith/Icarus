@@ -17,7 +17,7 @@ What makes it useful
 The language consists of multiple components such as:
  1. CoRe: The syntax formatter which is automatically installed when the binary is installed from github.
  2. Icarus (previously built in FrameForge):  This is the main program, which converts Icarus code into Assembly, Rust, binary or executables. 
- 3.Apollo: This is the package manager which is responsible for all the plugins and extensions. Apollo also manages the link between Icarus and some of my other projects which are built on this.
+ 3. Apollo: This is the package manager which is responsible for all the plugins and extensions. Apollo also manages the link between Icarus and some of my other projects which are built on this.
 
 
 
