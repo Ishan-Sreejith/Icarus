@@ -3,48 +3,39 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Icarus Language Playground</title>
+    <title>Icarus Playground</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        --bg: #f3efe5;
-        --bg-2: #ede6d8;
+        --bg: #f6f4ef;
         --panel: #ffffff;
-        --panel-2: #f5f2ea;
-        --ink: #171717;
-        --muted: #4b4b4b;
+        --panel-2: #f1eee7;
+        --ink: #151515;
+        --muted: #5a5a5a;
         --accent: #1f7a6b;
-        --accent-2: #c4623a;
-        --terminal-bg: #0f1115;
-        --terminal-ink: #d6f5de;
-        --border: rgba(23, 23, 23, 0.12);
-        --shadow: 0 28px 70px rgba(23, 21, 17, 0.12);
+        --danger: #c44b4b;
+        --border: rgba(21, 21, 21, 0.12);
+        --shadow: 0 18px 40px rgba(15, 13, 10, 0.08);
+        --radius: 14px;
         --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        --display: "Fraunces", serif;
         --body: "Space Grotesk", system-ui, sans-serif;
-        --radius: 18px;
-        --radius-sm: 12px;
-        --ease: cubic-bezier(0.16, 0.84, 0.44, 1);
       }
 
       [data-theme="dark"] {
-        --bg: #0f1216;
-        --bg-2: #171c22;
-        --panel: #151a22;
-        --panel-2: #1c2230;
-        --ink: #f5f5f2;
-        --muted: #b7b7b7;
+        --bg: #0f1215;
+        --panel: #151a20;
+        --panel-2: #1c222b;
+        --ink: #f2f2f2;
+        --muted: #b4b4b4;
         --accent: #4ec6b4;
-        --accent-2: #f2a668;
-        --terminal-bg: #0a0c10;
-        --terminal-ink: #d8fbe0;
-        --border: rgba(240, 240, 240, 0.14);
-        --shadow: 0 28px 70px rgba(2, 6, 12, 0.6);
+        --danger: #e07a7a;
+        --border: rgba(240, 240, 240, 0.12);
+        --shadow: 0 22px 50px rgba(0, 0, 0, 0.45);
       }
 
       * {
@@ -56,264 +47,163 @@
         font-family: var(--body);
         color: var(--ink);
         background: var(--bg);
-        line-height: 1.5;
       }
 
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(circle at top right, rgba(31, 122, 107, 0.14), transparent 55%),
-          radial-gradient(circle at 20% 30%, rgba(196, 98, 58, 0.12), transparent 45%),
-          linear-gradient(120deg, rgba(255, 255, 255, 0.55), transparent 60%);
-        opacity: 0.9;
-        pointer-events: none;
-        z-index: -2;
-      }
-
-      body::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background-image: radial-gradient(rgba(17, 17, 17, 0.06) 1px, transparent 0);
-        background-size: 26px 26px;
-        opacity: 0.25;
-        pointer-events: none;
-        z-index: -1;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      .page {
+      .app {
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+        gap: 18px;
+        padding: 20px clamp(18px, 4vw, 36px) 28px;
       }
 
-      header {
+      .topbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 28px clamp(20px, 5vw, 72px);
+        gap: 16px;
+        padding: 12px 16px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
       }
 
-      .logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-family: var(--display);
-        font-size: 24px;
+      .brand {
+        font-weight: 600;
         letter-spacing: 0.4px;
       }
 
-      .logo-badge {
-        width: 36px;
-        height: 36px;
-        border-radius: 14px;
-        background: linear-gradient(140deg, var(--accent), var(--accent-2));
-        display: grid;
-        place-items: center;
-        color: #fff;
-        font-weight: 700;
-      }
-
-      nav {
-        display: flex;
-        gap: 18px;
-        font-size: 15px;
+      .status {
+        font-size: 12px;
         color: var(--muted);
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
       }
 
-      nav a {
-        transition: color 0.2s ease;
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
       }
 
-      nav a:hover {
+      label {
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      select,
+      input,
+      textarea,
+      button {
+        font-family: var(--body);
+      }
+
+      select,
+      input,
+      textarea {
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        padding: 8px 10px;
+        background: var(--panel-2);
         color: var(--ink);
       }
 
-      .hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-        gap: clamp(24px, 4vw, 48px);
-        padding: 0 clamp(20px, 5vw, 72px) 40px;
-        align-items: center;
-      }
-
-      .hero h1 {
-        font-family: var(--display);
-        font-size: clamp(36px, 4.5vw, 60px);
-        margin: 0 0 16px;
-      }
-
-      .hero p {
-        margin: 0 0 20px;
-        color: var(--muted);
-        font-size: 18px;
-        max-width: 560px;
-      }
-
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
+      textarea {
+        width: 100%;
+        min-height: 320px;
+        resize: vertical;
+        font-family: var(--mono);
+        font-size: 14px;
+        line-height: 1.6;
       }
 
       .btn {
         border-radius: 999px;
-        padding: 12px 22px;
-        border: 1px solid transparent;
-        font-size: 14px;
+        padding: 8px 14px;
+        border: 1px solid var(--border);
+        background: var(--panel-2);
+        color: var(--ink);
+        font-size: 12px;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
       }
 
       .btn.primary {
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        background: var(--accent);
+        border-color: transparent;
         color: #fff;
-        box-shadow: 0 18px 30px rgba(31, 122, 107, 0.2);
       }
 
-      .btn.secondary {
-        background: transparent;
-        border-color: var(--border);
-        color: var(--ink);
+      .btn.danger {
+        background: var(--danger);
+        border-color: transparent;
+        color: #fff;
       }
 
-      .btn.ghost {
-        background: var(--panel-2);
-        border-color: var(--border);
-        color: var(--ink);
-      }
-
-      .btn:active {
-        transform: scale(0.98);
-      }
-
-      .hero-card {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 22px;
-        box-shadow: var(--shadow);
-        animation: floatIn 0.8s var(--ease) both;
-      }
-
-      .hero-card h3 {
-        margin: 0 0 10px;
-        font-size: 18px;
-      }
-
-      .hero-card ul {
-        margin: 0;
-        padding-left: 18px;
-        color: var(--muted);
-      }
-
-      .section {
-        padding: 48px clamp(20px, 5vw, 72px);
-      }
-
-      .section-title {
-        font-family: var(--display);
-        font-size: 28px;
-        margin: 0 0 8px;
-      }
-
-      .section-subtitle {
-        margin: 0 0 28px;
-        color: var(--muted);
-        max-width: 620px;
-      }
-
-      .demo-shell {
-        background: var(--bg-2);
-        border-radius: calc(var(--radius) + 6px);
-        padding: 16px;
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow);
-      }
-
-      .demo-grid {
+      .workspace {
+        flex: 1;
         display: grid;
-        grid-template-columns: minmax(0, 0.35fr) minmax(0, 0.65fr);
-        gap: 16px;
+        grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+        gap: 18px;
+        min-height: 0;
+      }
+
+      .column {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-height: 0;
       }
 
       .panel {
         background: var(--panel);
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 16px;
-        box-shadow: 0 20px 45px rgba(16, 16, 16, 0.08);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
       }
 
       .panel-header {
+        padding: 12px 14px 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 14px;
-        gap: 12px;
+        gap: 10px;
       }
 
       .panel-title {
         font-weight: 600;
       }
 
-      .pill {
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        padding: 4px 10px;
-        font-size: 12px;
-        color: var(--muted);
-      }
-
-      .stack {
+      .panel-body {
+        padding: 12px 14px 14px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
+        min-height: 0;
       }
 
       .file-controls {
         display: grid;
         grid-template-columns: 1fr auto;
-        gap: 10px;
-      }
-
-      input,
-      select,
-      textarea {
-        width: 100%;
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--border);
-        padding: 10px 12px;
-        font-family: var(--body);
-        background: var(--panel-2);
-        color: var(--ink);
-      }
-
-      textarea {
-        font-family: var(--mono);
-        font-size: 14px;
-        line-height: 1.6;
-        min-height: 320px;
-        resize: vertical;
+        gap: 8px;
       }
 
       .file-list {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        max-height: 240px;
         overflow: auto;
-        padding-right: 4px;
+        max-height: 220px;
       }
 
       .file-item {
@@ -322,11 +212,10 @@
         justify-content: space-between;
         gap: 8px;
         padding: 8px 10px;
-        border-radius: 12px;
+        border-radius: 10px;
         border: 1px solid transparent;
         background: var(--panel-2);
         cursor: pointer;
-        transition: border 0.2s ease, background 0.2s ease;
       }
 
       .file-item.active {
@@ -340,35 +229,34 @@
       }
 
       .file-actions button {
-        padding: 6px 10px;
+        padding: 4px 10px;
         border-radius: 999px;
         border: 1px solid var(--border);
         background: var(--panel);
-        font-size: 12px;
+        font-size: 11px;
         cursor: pointer;
       }
 
       .terminal {
-        background: var(--terminal-bg);
-        color: var(--terminal-ink);
-        border-radius: var(--radius);
-        padding: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: #0f1216;
+        color: #d6f5de;
+        border-radius: 12px;
+        padding: 12px;
+        font-family: var(--mono);
         display: flex;
         flex-direction: column;
         gap: 10px;
-        min-height: 220px;
+        min-height: 180px;
+      }
+
+      [data-theme="dark"] .terminal {
+        background: #0b0e12;
       }
 
       .terminal-log {
-        font-family: var(--mono);
-        font-size: 12px;
-        max-height: 180px;
+        flex: 1;
         overflow-y: auto;
-      }
-
-      .terminal-line {
-        opacity: 0.9;
+        font-size: 12px;
       }
 
       .terminal-line.error {
@@ -376,11 +264,13 @@
       }
 
       .terminal-input {
-        background: #0b0d11;
-        color: var(--terminal-ink);
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: #0b0e12;
+        color: #d6f5de;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 8px 10px;
         font-family: var(--mono);
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .editor-toolbar {
@@ -388,7 +278,6 @@
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        margin-bottom: 12px;
       }
 
       .file-meta {
@@ -397,41 +286,29 @@
         gap: 4px;
       }
 
-      .file-name {
-        font-weight: 600;
-      }
-
-      .editor-actions {
-        display: flex;
-        gap: 8px;
+      .pill {
+        font-size: 11px;
+        color: var(--muted);
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        width: fit-content;
       }
 
       .output {
         background: var(--panel-2);
         border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
+        border-radius: 10px;
         padding: 12px;
         font-family: var(--mono);
         font-size: 12px;
-        min-height: 120px;
+        min-height: 140px;
         white-space: pre-wrap;
       }
 
       .output.flash {
         animation: flash 0.5s ease;
-      }
-
-      .settings-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 12px;
-        margin-bottom: 14px;
-      }
-
-      .tests {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
       }
 
       .test-log {
@@ -443,54 +320,12 @@
         color: var(--muted);
       }
 
-      .test-line {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-      }
-
       .test-line.pass {
         color: var(--accent);
       }
 
       .test-line.fail {
-        color: #c44949;
-      }
-
-      .feature-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 16px;
-      }
-
-      .feature-card {
-        background: var(--panel);
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-        padding: 18px;
-        box-shadow: var(--shadow);
-        animation: floatIn 0.8s var(--ease) both;
-      }
-
-      .feature-card h4 {
-        margin: 0 0 8px;
-      }
-
-      footer {
-        padding: 32px clamp(20px, 5vw, 72px) 48px;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      @keyframes floatIn {
-        from {
-          opacity: 0;
-          transform: translateY(18px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        color: var(--danger);
       }
 
       @keyframes flash {
@@ -503,211 +338,120 @@
       }
 
       @media (max-width: 980px) {
-        header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 12px;
-        }
-
-        nav {
-          flex-wrap: wrap;
-        }
-
-        .hero {
-          grid-template-columns: 1fr;
-        }
-
-        .demo-grid {
+        .workspace {
           grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body data-theme="light">
-    <div class="page">
-      <header>
-        <div class="logo">
-          <div class="logo-badge">I</div>
-          Icarus Language
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">Icarus Playground</div>
+        <div class="status" id="engineStatus">Engine: loading</div>
+        <div class="controls">
+          <label>
+            Engine
+            <select id="engineSelect">
+              <option value="js">JavaScript</option>
+              <option value="wasm">WebAssembly</option>
+            </select>
+          </label>
+          <label>
+            Font
+            <select id="fontSizeSelect">
+              <option value="13">13px</option>
+              <option value="14" selected>14px</option>
+              <option value="15">15px</option>
+              <option value="16">16px</option>
+            </select>
+          </label>
+          <button class="btn" id="themeToggle">Theme</button>
         </div>
-        <nav>
-          <a href="#demo">Live Demo</a>
-          <a href="#features">Features</a>
-          <a href="#docs">Docs</a>
-        </nav>
       </header>
 
-      <section class="hero">
-        <div>
-          <h1>Build, test, and run Icarus directly in your browser.</h1>
-          <p>
-            This is a full GitHub Pages-ready IDE demo for Icarus. Create multiple files,
-            run them in a mock terminal, switch engines, and validate language features on demand.
-          </p>
-          <div class="hero-actions">
-            <a class="btn primary" href="#demo">Launch the demo</a>
-            <button class="btn secondary" id="themeToggle">Toggle theme</button>
-          </div>
-        </div>
-        <div class="hero-card">
-          <h3>What you can do here</h3>
-          <ul>
-            <li>Manage multiple `.fr` files with create, rename, and delete.</li>
-            <li>Run Icarus with either the JS engine or WebAssembly.</li>
-            <li>Validate core language features with built-in tests.</li>
-          </ul>
-        </div>
-      </section>
-
-      <section id="demo" class="section">
-        <h2 class="section-title">Live Demo Workspace</h2>
-        <p class="section-subtitle">
-          Use the file manager to organize source files, then run them in the editor.
-          The terminal mimics common Icarus commands.
-        </p>
-
-        <div class="demo-shell">
-          <div class="demo-grid">
-            <div class="stack">
-              <div class="panel">
-                <div class="panel-header">
-                  <div class="panel-title">Files</div>
-                  <div class="pill" id="fileCountLabel">0 files</div>
-                </div>
-                <div class="file-controls">
-                  <input type="text" id="newFileName" placeholder="new_file.fr" />
-                  <button class="btn ghost" id="createFileBtn">Create</button>
-                </div>
-                <div class="file-list" id="fileList"></div>
-                <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
-                  <button class="btn secondary" id="refreshFilesBtn">Refresh</button>
-                  <button class="btn secondary" id="resetFilesBtn">Reset Samples</button>
-                </div>
-              </div>
-
-              <div class="panel">
-                <div class="panel-header">
-                  <div class="panel-title">Terminal</div>
-                  <div class="pill">mock shell</div>
-                </div>
-                <div class="terminal">
-                  <div class="terminal-log" id="terminalLog"></div>
-                  <input
-                    type="text"
-                    class="terminal-input"
-                    id="terminalInput"
-                    placeholder="Type a command, press Enter"
-                  />
-                </div>
-              </div>
-
-              <div class="panel">
-                <div class="panel-header">
-                  <div class="panel-title">Feature Tests</div>
-                  <div class="pill" id="engineStatus">Engine: loading</div>
-                </div>
-                <div class="tests">
-                  <button class="btn primary" id="runTestsBtn">Run all tests</button>
-                  <div class="test-log" id="testLog">No tests run yet.</div>
-                </div>
-              </div>
+      <main class="workspace">
+        <section class="column">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Files</div>
+              <div class="pill" id="fileCountLabel">0 files</div>
             </div>
-
-            <div class="stack">
-              <div class="panel">
-                <div class="panel-header">
-                  <div class="panel-title">Editor</div>
-                  <div class="pill" id="engineLabel">Engine: JS</div>
-                </div>
-                <div class="settings-row">
-                  <label>
-                    Engine
-                    <select id="engineSelect">
-                      <option value="js">JavaScript</option>
-                      <option value="wasm">WebAssembly</option>
-                    </select>
-                  </label>
-                  <label>
-                    Font size
-                    <select id="fontSizeSelect">
-                      <option value="13">13px</option>
-                      <option value="14" selected>14px</option>
-                      <option value="15">15px</option>
-                      <option value="16">16px</option>
-                    </select>
-                  </label>
-                </div>
-                <div class="editor-toolbar">
-                  <div class="file-meta">
-                    <div class="file-name" id="currentFileLabel">No file selected</div>
-                    <div class="pill" id="fileDirtyLabel">Saved</div>
-                  </div>
-                  <div class="editor-actions">
-                    <button class="btn ghost" id="saveBtn">Save</button>
-                    <button class="btn primary" id="runBtn">Run</button>
-                  </div>
-                </div>
-                <textarea id="codeEditor" spellcheck="false"></textarea>
+            <div class="panel-body">
+              <div class="file-controls">
+                <input type="text" id="newFileName" placeholder="new_file.fr" />
+                <button class="btn primary" id="createFileBtn">Create</button>
               </div>
-
-              <div class="panel">
-                <div class="panel-header">
-                  <div class="panel-title">Output</div>
-                  <div class="pill">program output</div>
-                </div>
-                <div class="output" id="runOutput">Run a file to see output.</div>
+              <div class="file-list" id="fileList"></div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn" id="refreshFilesBtn">Refresh</button>
+                <button class="btn" id="resetFilesBtn">Reset Samples</button>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section id="features" class="section">
-        <h2 class="section-title">Why Icarus feels different</h2>
-        <p class="section-subtitle">
-          A colon-first language with explicit structure. This demo is wired to highlight the
-          language fundamentals and the workflow around them.
-        </p>
-        <div class="feature-grid">
-          <div class="feature-card">
-            <h4>Fast, readable syntax</h4>
-            <p>Colon-driven structure makes intent obvious and keeps control flow compact.</p>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Terminal</div>
+              <div class="pill">mock shell</div>
+            </div>
+            <div class="panel-body">
+              <div class="terminal">
+                <div class="terminal-log" id="terminalLog"></div>
+                <input
+                  type="text"
+                  class="terminal-input"
+                  id="terminalInput"
+                  placeholder="Type a command, press Enter"
+                />
+              </div>
+            </div>
           </div>
-          <div class="feature-card">
-            <h4>Multiple execution paths</h4>
-            <p>Toggle between the JS engine and the WebAssembly engine without leaving the page.</p>
-          </div>
-          <div class="feature-card">
-            <h4>Feature validation</h4>
-            <p>Run the feature suite to confirm loops, functions, collections, and conversions.</p>
-          </div>
-        </div>
-      </section>
 
-      <section id="docs" class="section">
-        <h2 class="section-title">Starter commands</h2>
-        <p class="section-subtitle">
-          Use the mock terminal to test Icarus commands.
-        </p>
-        <div class="feature-grid">
-          <div class="feature-card">
-            <h4>File management</h4>
-            <p>`ls`, `cat &lt;file&gt;`, `open &lt;file&gt;`, `touch &lt;file&gt;`, `rm &lt;file&gt;`, `mv &lt;old&gt; &lt;new&gt;`</p>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Feature Tests</div>
+              <div class="pill" id="engineLabel">Engine: JS</div>
+            </div>
+            <div class="panel-body">
+              <button class="btn primary" id="runTestsBtn">Run all tests</button>
+              <div class="test-log" id="testLog">No tests run yet.</div>
+            </div>
           </div>
-          <div class="feature-card">
-            <h4>Execution</h4>
-            <p>`run &lt;file&gt;`, `core &lt;file&gt;`, `metroman --out`</p>
-          </div>
-          <div class="feature-card">
-            <h4>Utilities</h4>
-            <p>`help`, `tests`, `clear`</p>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <footer>
-        Icarus demo workspace. Hosted directly from the GitHub Pages root with local WebAssembly assets.
-      </footer>
+        <section class="column">
+          <div class="panel" style="flex: 1;">
+            <div class="panel-header">
+              <div class="panel-title">Editor</div>
+              <div class="pill" id="fileDirtyLabel">Saved</div>
+            </div>
+            <div class="panel-body" style="flex: 1;">
+              <div class="editor-toolbar">
+                <div class="file-meta">
+                  <div class="panel-title" id="currentFileLabel">No file selected</div>
+                  <div class="pill">Ctrl/Cmd + Enter to run</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn" id="saveBtn">Save</button>
+                  <button class="btn primary" id="runBtn">Run</button>
+                </div>
+              </div>
+              <textarea id="codeEditor" spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Output</div>
+              <div class="pill">program output</div>
+            </div>
+            <div class="panel-body">
+              <div class="output" id="runOutput">Run a file to see output.</div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
 
     <script type="module">
