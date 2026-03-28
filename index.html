@@ -3,80 +3,1244 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Icarus</title>
+    <title>Icarus Language Playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        color-scheme: light;
-        font-family: "Georgia", "Times New Roman", serif;
-        background: #f8f6f2;
-        color: #222;
+        --bg: #f3efe5;
+        --bg-2: #ede6d8;
+        --panel: #ffffff;
+        --panel-2: #f5f2ea;
+        --ink: #171717;
+        --muted: #4b4b4b;
+        --accent: #1f7a6b;
+        --accent-2: #c4623a;
+        --terminal-bg: #0f1115;
+        --terminal-ink: #d6f5de;
+        --border: rgba(23, 23, 23, 0.12);
+        --shadow: 0 28px 70px rgba(23, 21, 17, 0.12);
+        --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        --display: "Fraunces", serif;
+        --body: "Space Grotesk", system-ui, sans-serif;
+        --radius: 18px;
+        --radius-sm: 12px;
+        --ease: cubic-bezier(0.16, 0.84, 0.44, 1);
       }
+
+      [data-theme="dark"] {
+        --bg: #0f1216;
+        --bg-2: #171c22;
+        --panel: #151a22;
+        --panel-2: #1c2230;
+        --ink: #f5f5f2;
+        --muted: #b7b7b7;
+        --accent: #4ec6b4;
+        --accent-2: #f2a668;
+        --terminal-bg: #0a0c10;
+        --terminal-ink: #d8fbe0;
+        --border: rgba(240, 240, 240, 0.14);
+        --shadow: 0 28px 70px rgba(2, 6, 12, 0.6);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
-        padding: 48px 20px;
+        font-family: var(--body);
+        color: var(--ink);
+        background: var(--bg);
+        line-height: 1.5;
       }
-      main {
-        max-width: 720px;
-        margin: 0 auto;
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(circle at top right, rgba(31, 122, 107, 0.14), transparent 55%),
+          radial-gradient(circle at 20% 30%, rgba(196, 98, 58, 0.12), transparent 45%),
+          linear-gradient(120deg, rgba(255, 255, 255, 0.55), transparent 60%);
+        opacity: 0.9;
+        pointer-events: none;
+        z-index: -2;
       }
-      h1 {
-        font-size: 40px;
-        margin: 0 0 12px 0;
-        letter-spacing: 0.5px;
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(rgba(17, 17, 17, 0.06) 1px, transparent 0);
+        background-size: 26px 26px;
+        opacity: 0.25;
+        pointer-events: none;
+        z-index: -1;
       }
-      p {
-        line-height: 1.6;
-        font-size: 18px;
-        margin: 0 0 16px 0;
-      }
-      .links {
-        margin-top: 24px;
-      }
+
       a {
-        color: #1f4d6b;
+        color: inherit;
         text-decoration: none;
       }
-      a:hover {
-        text-decoration: underline;
+
+      .page {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
-      ul {
-        padding-left: 20px;
-        margin: 8px 0 0 0;
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 28px clamp(20px, 5vw, 72px);
       }
-      li {
-        margin: 6px 0;
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--display);
+        font-size: 24px;
+        letter-spacing: 0.4px;
       }
-      footer {
-        margin-top: 32px;
+
+      .logo-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 14px;
+        background: linear-gradient(140deg, var(--accent), var(--accent-2));
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 700;
+      }
+
+      nav {
+        display: flex;
+        gap: 18px;
+        font-size: 15px;
+        color: var(--muted);
+      }
+
+      nav a {
+        transition: color 0.2s ease;
+      }
+
+      nav a:hover {
+        color: var(--ink);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: clamp(24px, 4vw, 48px);
+        padding: 0 clamp(20px, 5vw, 72px) 40px;
+        align-items: center;
+      }
+
+      .hero h1 {
+        font-family: var(--display);
+        font-size: clamp(36px, 4.5vw, 60px);
+        margin: 0 0 16px;
+      }
+
+      .hero p {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 18px;
+        max-width: 560px;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .btn {
+        border-radius: 999px;
+        padding: 12px 22px;
+        border: 1px solid transparent;
         font-size: 14px;
-        color: #555;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+      }
+
+      .btn.primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #fff;
+        box-shadow: 0 18px 30px rgba(31, 122, 107, 0.2);
+      }
+
+      .btn.secondary {
+        background: transparent;
+        border-color: var(--border);
+        color: var(--ink);
+      }
+
+      .btn.ghost {
+        background: var(--panel-2);
+        border-color: var(--border);
+        color: var(--ink);
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      .hero-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px;
+        box-shadow: var(--shadow);
+        animation: floatIn 0.8s var(--ease) both;
+      }
+
+      .hero-card h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .hero-card ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+
+      .section {
+        padding: 48px clamp(20px, 5vw, 72px);
+      }
+
+      .section-title {
+        font-family: var(--display);
+        font-size: 28px;
+        margin: 0 0 8px;
+      }
+
+      .section-subtitle {
+        margin: 0 0 28px;
+        color: var(--muted);
+        max-width: 620px;
+      }
+
+      .demo-shell {
+        background: var(--bg-2);
+        border-radius: calc(var(--radius) + 6px);
+        padding: 16px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      .demo-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.35fr) minmax(0, 0.65fr);
+        gap: 16px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        box-shadow: 0 20px 45px rgba(16, 16, 16, 0.08);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        gap: 12px;
+      }
+
+      .panel-title {
+        font-weight: 600;
+      }
+
+      .pill {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .file-controls {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        font-family: var(--body);
+        background: var(--panel-2);
+        color: var(--ink);
+      }
+
+      textarea {
+        font-family: var(--mono);
+        font-size: 14px;
+        line-height: 1.6;
+        min-height: 320px;
+        resize: vertical;
+      }
+
+      .file-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 240px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .file-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        background: var(--panel-2);
+        cursor: pointer;
+        transition: border 0.2s ease, background 0.2s ease;
+      }
+
+      .file-item.active {
+        border-color: var(--accent);
+        background: rgba(31, 122, 107, 0.12);
+      }
+
+      .file-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .file-actions button {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .terminal {
+        background: var(--terminal-bg);
+        color: var(--terminal-ink);
+        border-radius: var(--radius);
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 220px;
+      }
+
+      .terminal-log {
+        font-family: var(--mono);
+        font-size: 12px;
+        max-height: 180px;
+        overflow-y: auto;
+      }
+
+      .terminal-line {
+        opacity: 0.9;
+      }
+
+      .terminal-line.error {
+        color: #ffb3a7;
+      }
+
+      .terminal-input {
+        background: #0b0d11;
+        color: var(--terminal-ink);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+
+      .editor-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .file-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .file-name {
+        font-weight: 600;
+      }
+
+      .editor-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .output {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        min-height: 120px;
+        white-space: pre-wrap;
+      }
+
+      .output.flash {
+        animation: flash 0.5s ease;
+      }
+
+      .settings-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .tests {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .test-log {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .test-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .test-line.pass {
+        color: var(--accent);
+      }
+
+      .test-line.fail {
+        color: #c44949;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+
+      .feature-card {
+        background: var(--panel);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 18px;
+        box-shadow: var(--shadow);
+        animation: floatIn 0.8s var(--ease) both;
+      }
+
+      .feature-card h4 {
+        margin: 0 0 8px;
+      }
+
+      footer {
+        padding: 32px clamp(20px, 5vw, 72px) 48px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @keyframes floatIn {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes flash {
+        from {
+          box-shadow: 0 0 0 0 rgba(31, 122, 107, 0.5);
+        }
+        to {
+          box-shadow: 0 0 0 12px rgba(31, 122, 107, 0);
+        }
+      }
+
+      @media (max-width: 980px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        nav {
+          flex-wrap: wrap;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .demo-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
-  <body>
-    <main>
-      <h1>Icarus</h1>
-      <p>
-        This is the GitHub Pages home for the Icarus repository. The repo is
-        intentionally slim and only tracks the core source and build folders.
-      </p>
-      <p>
-        If you are looking for outputs, start with the dist and wasm folders
-        in the repository.
-      </p>
-      <div class="links">
-        <p>Quick links:</p>
-        <ul>
-          <li><a href="./dist/">dist</a></li>
-          <li><a href="./pkg/">pkg</a></li>
-          <li><a href="./js/">js</a></li>
-          <li><a href="./vm/">vm</a></li>
-          <li><a href="./wasm/">wasm</a></li>
-        </ul>
-      </div>
+  <body data-theme="light">
+    <div class="page">
+      <header>
+        <div class="logo">
+          <div class="logo-badge">I</div>
+          Icarus Language
+        </div>
+        <nav>
+          <a href="#demo">Live Demo</a>
+          <a href="#features">Features</a>
+          <a href="#docs">Docs</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div>
+          <h1>Build, test, and run Icarus directly in your browser.</h1>
+          <p>
+            This is a full GitHub Pages-ready IDE demo for Icarus. Create multiple files,
+            run them in a mock terminal, switch engines, and validate language features on demand.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#demo">Launch the demo</a>
+            <button class="btn secondary" id="themeToggle">Toggle theme</button>
+          </div>
+        </div>
+        <div class="hero-card">
+          <h3>What you can do here</h3>
+          <ul>
+            <li>Manage multiple `.fr` files with create, rename, and delete.</li>
+            <li>Run Icarus with either the JS engine or WebAssembly.</li>
+            <li>Validate core language features with built-in tests.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="demo" class="section">
+        <h2 class="section-title">Live Demo Workspace</h2>
+        <p class="section-subtitle">
+          Use the file manager to organize source files, then run them in the editor.
+          The terminal mimics common Icarus commands.
+        </p>
+
+        <div class="demo-shell">
+          <div class="demo-grid">
+            <div class="stack">
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">Files</div>
+                  <div class="pill" id="fileCountLabel">0 files</div>
+                </div>
+                <div class="file-controls">
+                  <input type="text" id="newFileName" placeholder="new_file.fr" />
+                  <button class="btn ghost" id="createFileBtn">Create</button>
+                </div>
+                <div class="file-list" id="fileList"></div>
+                <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
+                  <button class="btn secondary" id="refreshFilesBtn">Refresh</button>
+                  <button class="btn secondary" id="resetFilesBtn">Reset Samples</button>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">Terminal</div>
+                  <div class="pill">mock shell</div>
+                </div>
+                <div class="terminal">
+                  <div class="terminal-log" id="terminalLog"></div>
+                  <input
+                    type="text"
+                    class="terminal-input"
+                    id="terminalInput"
+                    placeholder="Type a command, press Enter"
+                  />
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">Feature Tests</div>
+                  <div class="pill" id="engineStatus">Engine: loading</div>
+                </div>
+                <div class="tests">
+                  <button class="btn primary" id="runTestsBtn">Run all tests</button>
+                  <div class="test-log" id="testLog">No tests run yet.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">Editor</div>
+                  <div class="pill" id="engineLabel">Engine: JS</div>
+                </div>
+                <div class="settings-row">
+                  <label>
+                    Engine
+                    <select id="engineSelect">
+                      <option value="js">JavaScript</option>
+                      <option value="wasm">WebAssembly</option>
+                    </select>
+                  </label>
+                  <label>
+                    Font size
+                    <select id="fontSizeSelect">
+                      <option value="13">13px</option>
+                      <option value="14" selected>14px</option>
+                      <option value="15">15px</option>
+                      <option value="16">16px</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="editor-toolbar">
+                  <div class="file-meta">
+                    <div class="file-name" id="currentFileLabel">No file selected</div>
+                    <div class="pill" id="fileDirtyLabel">Saved</div>
+                  </div>
+                  <div class="editor-actions">
+                    <button class="btn ghost" id="saveBtn">Save</button>
+                    <button class="btn primary" id="runBtn">Run</button>
+                  </div>
+                </div>
+                <textarea id="codeEditor" spellcheck="false"></textarea>
+              </div>
+
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">Output</div>
+                  <div class="pill">program output</div>
+                </div>
+                <div class="output" id="runOutput">Run a file to see output.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section">
+        <h2 class="section-title">Why Icarus feels different</h2>
+        <p class="section-subtitle">
+          A colon-first language with explicit structure. This demo is wired to highlight the
+          language fundamentals and the workflow around them.
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h4>Fast, readable syntax</h4>
+            <p>Colon-driven structure makes intent obvious and keeps control flow compact.</p>
+          </div>
+          <div class="feature-card">
+            <h4>Multiple execution paths</h4>
+            <p>Toggle between the JS engine and the WebAssembly engine without leaving the page.</p>
+          </div>
+          <div class="feature-card">
+            <h4>Feature validation</h4>
+            <p>Run the feature suite to confirm loops, functions, collections, and conversions.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="docs" class="section">
+        <h2 class="section-title">Starter commands</h2>
+        <p class="section-subtitle">
+          Use the mock terminal to test Icarus commands.
+        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h4>File management</h4>
+            <p>`ls`, `cat &lt;file&gt;`, `open &lt;file&gt;`, `touch &lt;file&gt;`, `rm &lt;file&gt;`, `mv &lt;old&gt; &lt;new&gt;`</p>
+          </div>
+          <div class="feature-card">
+            <h4>Execution</h4>
+            <p>`run &lt;file&gt;`, `core &lt;file&gt;`, `metroman --out`</p>
+          </div>
+          <div class="feature-card">
+            <h4>Utilities</h4>
+            <p>`help`, `tests`, `clear`</p>
+          </div>
+        </div>
+      </section>
+
       <footer>
-        To enable this page, set GitHub Pages to use the master branch root.
+        Icarus demo workspace. Hosted directly from the GitHub Pages root with local WebAssembly assets.
       </footer>
-    </main>
+    </div>
+
+    <script type="module">
+      import { CoReJsEngine } from "./js/core_js_engine.js";
+
+      const fileList = document.getElementById("fileList");
+      const editor = document.getElementById("codeEditor");
+      const output = document.getElementById("runOutput");
+      const currentFileLabel = document.getElementById("currentFileLabel");
+      const fileDirtyLabel = document.getElementById("fileDirtyLabel");
+      const engineStatus = document.getElementById("engineStatus");
+      const engineLabel = document.getElementById("engineLabel");
+      const terminalLog = document.getElementById("terminalLog");
+      const terminalInput = document.getElementById("terminalInput");
+      const fileCountLabel = document.getElementById("fileCountLabel");
+      const engineSelect = document.getElementById("engineSelect");
+      const fontSizeSelect = document.getElementById("fontSizeSelect");
+      const testLog = document.getElementById("testLog");
+      const themeToggle = document.getElementById("themeToggle");
+
+      const jsEngine = new CoReJsEngine();
+      let wasmCompiler = null;
+      let wasmReady = false;
+
+      const STORAGE_FILES = "icarus_demo_files_v1";
+      const STORAGE_CURRENT = "icarus_demo_current_v1";
+      const STORAGE_SETTINGS = "icarus_demo_settings_v1";
+
+      const files = new Map();
+      let currentFile = null;
+      let dirty = false;
+
+      const settings = {
+        theme: "light",
+        fontSize: 14,
+        engine: "js",
+      };
+
+      const testCases = [
+        { name: "Core smoke test", file: "test_all.fr", expect: "All tests done." },
+        { name: "Feature showcase", file: "feature_showcase.fr", expect: "Feature Test Complete" },
+      ];
+
+      function logTerminal(message, kind = "info") {
+        const line = document.createElement("div");
+        line.className = `terminal-line${kind === "error" ? " error" : ""}`;
+        line.textContent = message;
+        terminalLog.appendChild(line);
+        terminalLog.scrollTop = terminalLog.scrollHeight;
+      }
+
+      function setStatus() {
+        const wasmText = wasmReady ? "WASM ready" : "WASM not ready";
+        engineStatus.textContent = `Engine: ${wasmText}`;
+        engineLabel.textContent = `Engine: ${settings.engine.toUpperCase()}`;
+      }
+
+      function applySettings() {
+        document.body.setAttribute("data-theme", settings.theme);
+        editor.style.fontSize = `${settings.fontSize}px`;
+        engineSelect.value = settings.engine;
+        fontSizeSelect.value = String(settings.fontSize);
+      }
+
+      function saveSettings() {
+        localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(settings));
+      }
+
+      function loadSettings() {
+        const stored = localStorage.getItem(STORAGE_SETTINGS);
+        if (!stored) return;
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.theme) settings.theme = parsed.theme;
+          if (parsed.fontSize) settings.fontSize = parsed.fontSize;
+          if (parsed.engine) settings.engine = parsed.engine;
+        } catch {
+          return;
+        }
+      }
+
+      function updateDirtyState(isDirty) {
+        dirty = isDirty;
+        fileDirtyLabel.textContent = dirty ? "Unsaved" : "Saved";
+      }
+
+      function listFiles() {
+        const names = Array.from(files.keys()).sort();
+        fileList.innerHTML = "";
+        fileCountLabel.textContent = `${names.length} files`;
+
+        if (names.length === 0) {
+          const empty = document.createElement("div");
+          empty.textContent = "No files yet.";
+          empty.className = "pill";
+          fileList.appendChild(empty);
+          return;
+        }
+
+        for (const name of names) {
+          const row = document.createElement("div");
+          row.className = "file-item" + (name === currentFile ? " active" : "");
+
+          const label = document.createElement("div");
+          label.textContent = name;
+          label.style.flex = "1";
+          label.onclick = () => openFile(name);
+
+          const actions = document.createElement("div");
+          actions.className = "file-actions";
+
+          const renameBtn = document.createElement("button");
+          renameBtn.textContent = "Rename";
+          renameBtn.onclick = (e) => {
+            e.stopPropagation();
+            renameFile(name);
+          };
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "Delete";
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteFile(name);
+          };
+
+          actions.append(renameBtn, deleteBtn);
+          row.append(label, actions);
+          fileList.appendChild(row);
+        }
+      }
+
+      function syncToWasm(name) {
+        if (!wasmReady) return;
+        wasmCompiler.save_file(name, files.get(name) || "");
+      }
+
+      function syncAllToWasm() {
+        if (!wasmReady) return;
+        for (const [name, content] of files.entries()) {
+          wasmCompiler.save_file(name, content);
+        }
+      }
+
+      function openFile(name) {
+        if (!files.has(name)) return;
+        currentFile = name;
+        editor.value = files.get(name);
+        currentFileLabel.textContent = name;
+        updateDirtyState(false);
+        listFiles();
+        persistFiles();
+      }
+
+      function validateFileName(name) {
+        if (!name) return "File name required.";
+        if (!name.endsWith(".fr")) return "Files must end with .fr";
+        return "";
+      }
+
+      function createFile(name, content) {
+        const error = validateFileName(name);
+        if (error) {
+          alert(error);
+          return;
+        }
+        if (files.has(name)) {
+          alert("File already exists.");
+          return;
+        }
+        files.set(name, content || "");
+        syncToWasm(name);
+        listFiles();
+        openFile(name);
+        persistFiles();
+      }
+
+      function renameFile(oldName, forcedName) {
+        const newName = forcedName || prompt("Rename file to:", oldName);
+        if (!newName || newName === oldName) return;
+        const error = validateFileName(newName);
+        if (error) {
+          alert(error);
+          return;
+        }
+        if (files.has(newName)) {
+          alert("File already exists.");
+          return;
+        }
+        const content = files.get(oldName) || "";
+        files.delete(oldName);
+        files.set(newName, content);
+        if (wasmReady) {
+          wasmCompiler.delete_file(oldName);
+          wasmCompiler.save_file(newName, content);
+        }
+        if (currentFile === oldName) {
+          currentFile = newName;
+          currentFileLabel.textContent = newName;
+        }
+        listFiles();
+        persistFiles();
+      }
+
+      function deleteFile(name) {
+        if (!confirm(`Delete ${name}?`)) return;
+        files.delete(name);
+        if (wasmReady) wasmCompiler.delete_file(name);
+        if (currentFile === name) {
+          currentFile = null;
+          editor.value = "";
+          currentFileLabel.textContent = "No file selected";
+          updateDirtyState(false);
+        }
+        listFiles();
+        persistFiles();
+      }
+
+      function saveCurrent() {
+        if (!currentFile) {
+          alert("No file selected.");
+          return;
+        }
+        files.set(currentFile, editor.value);
+        syncToWasm(currentFile);
+        updateDirtyState(false);
+        listFiles();
+        persistFiles();
+      }
+
+      function pickEngine() {
+        if (settings.engine === "wasm" && wasmReady) return "wasm";
+        if (settings.engine === "wasm" && !wasmReady) {
+          logTerminal("WASM engine not ready. Falling back to JS.", "error");
+        }
+        return "js";
+      }
+
+      function runFile(name, silent = false) {
+        if (!name || !files.has(name)) {
+          if (!silent) output.textContent = "File not found.";
+          return { ok: false, output: "File not found." };
+        }
+        if (!silent && name === currentFile) saveCurrent();
+        const engine = pickEngine();
+        try {
+          const result =
+            engine === "wasm"
+              ? wasmCompiler.execute(name)
+              : jsEngine.execute(files.get(name) || "");
+          const text = result || "Program executed successfully";
+          if (!silent) {
+            output.textContent = text;
+            output.classList.remove("flash");
+            void output.offsetWidth;
+            output.classList.add("flash");
+          }
+          return { ok: true, output: text };
+        } catch (err) {
+          const message = `Error: ${err.message}`;
+          if (!silent) {
+            output.textContent = message;
+            output.classList.remove("flash");
+            void output.offsetWidth;
+            output.classList.add("flash");
+          }
+          return { ok: false, output: message };
+        }
+      }
+
+      async function runFeatureTests() {
+        testLog.innerHTML = "";
+        const summary = [];
+        for (const test of testCases) {
+          const line = document.createElement("div");
+          line.className = "test-line";
+          line.textContent = `${test.name} ...`;
+          testLog.appendChild(line);
+          const res = runFile(test.file, true);
+          const ok = res.ok && (!test.expect || res.output.includes(test.expect));
+          line.className = `test-line ${ok ? "pass" : "fail"}`;
+          line.textContent = `${test.name} ${ok ? "passed" : "failed"}`;
+          summary.push(ok);
+        }
+        if (summary.every(Boolean)) {
+          logTerminal("All feature tests passed.");
+        } else {
+          logTerminal("Some feature tests failed. Check the test panel.", "error");
+        }
+      }
+
+      function handleCommand(input) {
+        const trimmed = input.trim();
+        if (!trimmed) return;
+        logTerminal(`$ ${trimmed}`);
+        const parts = trimmed.split(/\s+/);
+        const cmd = parts[0];
+        const args = parts.slice(1);
+
+        if (cmd === "clear") {
+          terminalLog.innerHTML = "";
+          return;
+        }
+
+        if (cmd === "help") {
+          logTerminal("Commands: help, ls, cat <file>, open <file>, run <file>, touch <file>, rm <file>, mv <old> <new>, tests, clear, core, metroman");
+          return;
+        }
+
+        if (cmd === "tests") {
+          runFeatureTests();
+          logTerminal("Running feature tests...");
+          return;
+        }
+
+        if (cmd === "ls") {
+          logTerminal(Array.from(files.keys()).sort().join("  ") || "(no files)");
+          return;
+        }
+
+        if (cmd === "cat") {
+          const name = args[0];
+          if (!name || !files.has(name)) {
+            logTerminal("File not found.", "error");
+            return;
+          }
+          logTerminal(files.get(name));
+          return;
+        }
+
+        if (cmd === "open") {
+          const name = args[0];
+          if (!name || !files.has(name)) {
+            logTerminal("File not found.", "error");
+            return;
+          }
+          openFile(name);
+          return;
+        }
+
+        if (cmd === "touch") {
+          const name = args[0];
+          if (!name) {
+            logTerminal("Usage: touch <file>", "error");
+            return;
+          }
+          createFile(name, "");
+          return;
+        }
+
+        if (cmd === "rm") {
+          const name = args[0];
+          if (!name || !files.has(name)) {
+            logTerminal("File not found.", "error");
+            return;
+          }
+          deleteFile(name);
+          logTerminal(`Deleted ${name}`);
+          return;
+        }
+
+        if (cmd === "mv") {
+          const [oldName, newName] = args;
+          if (!oldName || !newName) {
+            logTerminal("Usage: mv <old> <new>", "error");
+            return;
+          }
+          if (!files.has(oldName)) {
+            logTerminal("File not found.", "error");
+            return;
+          }
+          if (files.has(newName)) {
+            logTerminal("Target file already exists.", "error");
+            return;
+          }
+          renameFile(oldName, newName);
+          logTerminal(`Renamed ${oldName} -> ${newName}`);
+          return;
+        }
+
+        if (cmd === "run") {
+          const name = args[0] || currentFile;
+          if (!name || !files.has(name)) {
+            logTerminal("File not found.", "error");
+            return;
+          }
+          runFile(name);
+          logTerminal(`Executed ${name}.`);
+          return;
+        }
+
+        if (cmd === "core" || cmd === "metroman") {
+          if (!wasmReady) {
+            logTerminal("WASM engine not available. Command requires WASM.", "error");
+            return;
+          }
+          syncAllToWasm();
+          const res = wasmCompiler.execute_command(trimmed);
+          logTerminal(res || "(no output)");
+          return;
+        }
+
+        logTerminal("Unknown command. Type help.", "error");
+      }
+
+      function persistFiles() {
+        localStorage.setItem(STORAGE_FILES, JSON.stringify(Array.from(files.entries())));
+        if (currentFile) localStorage.setItem(STORAGE_CURRENT, currentFile);
+      }
+
+      function loadStoredFiles() {
+        const raw = localStorage.getItem(STORAGE_FILES);
+        if (!raw) return false;
+        try {
+          const entries = JSON.parse(raw);
+          files.clear();
+          for (const [name, content] of entries) {
+            files.set(name, content || "");
+          }
+          const savedCurrent = localStorage.getItem(STORAGE_CURRENT);
+          if (savedCurrent && files.has(savedCurrent)) {
+            currentFile = savedCurrent;
+          }
+          return files.size > 0;
+        } catch {
+          return false;
+        }
+      }
+
+      async function loadSamples() {
+        const samples = [
+          { name: "main.fr", path: "./main.fr", fallback: jsEngine.get_sample_code() },
+          { name: "feature_showcase.fr", path: "./feature_showcase.fr", fallback: "say: \"Icarus showcase\"" },
+          { name: "test_all.fr", path: "./vm/test_all.fr", fallback: "say: \"Testing...\"\nsay: \"All tests done.\"" },
+        ];
+        for (const sample of samples) {
+          let content = sample.fallback;
+          try {
+            const res = await fetch(sample.path);
+            if (res.ok) content = await res.text();
+          } catch {
+            content = sample.fallback;
+          }
+          files.set(sample.name, content.trim() + "\n");
+        }
+      }
+
+      async function initWasm() {
+        try {
+          const mod = await import("./wasm/pkg/core_wasm.js");
+          await mod.default();
+          wasmCompiler = new mod.CoreCompilerWasm();
+          wasmReady = true;
+          syncAllToWasm();
+          setStatus();
+        } catch (err) {
+          wasmReady = false;
+          setStatus();
+          logTerminal(`WASM init failed: ${err.message}`, "error");
+        }
+      }
+
+      document.getElementById("createFileBtn").onclick = () => {
+        const input = document.getElementById("newFileName");
+        createFile(input.value.trim(), "");
+        input.value = "";
+      };
+
+      document.getElementById("refreshFilesBtn").onclick = () => listFiles();
+      document.getElementById("resetFilesBtn").onclick = async () => {
+        files.clear();
+        localStorage.removeItem(STORAGE_FILES);
+        localStorage.removeItem(STORAGE_CURRENT);
+        await loadSamples();
+        if (!currentFile && files.size > 0) {
+          openFile(Array.from(files.keys()).sort()[0]);
+        }
+        syncAllToWasm();
+        listFiles();
+        logTerminal("Sample files restored.");
+      };
+
+      document.getElementById("saveBtn").onclick = saveCurrent;
+      document.getElementById("runBtn").onclick = () => runFile(currentFile);
+      document.getElementById("runTestsBtn").onclick = runFeatureTests;
+
+      terminalInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          handleCommand(terminalInput.value);
+          terminalInput.value = "";
+        }
+      });
+
+      editor.addEventListener("input", () => updateDirtyState(true));
+
+      fontSizeSelect.addEventListener("change", () => {
+        settings.fontSize = Number(fontSizeSelect.value);
+        applySettings();
+        saveSettings();
+      });
+
+      engineSelect.addEventListener("change", () => {
+        settings.engine = engineSelect.value;
+        setStatus();
+        saveSettings();
+      });
+
+      themeToggle.addEventListener("click", () => {
+        settings.theme = settings.theme === "light" ? "dark" : "light";
+        applySettings();
+        saveSettings();
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+          runFile(currentFile);
+        }
+      });
+
+      async function bootstrap() {
+        loadSettings();
+        applySettings();
+        if (!loadStoredFiles()) {
+          await loadSamples();
+        }
+        listFiles();
+        const initial = currentFile || Array.from(files.keys()).sort()[0];
+        if (initial) openFile(initial);
+        logTerminal("Icarus demo ready. Type help for commands.");
+        setStatus();
+        initWasm();
+      }
+
+      bootstrap();
+    </script>
   </body>
 </html>
