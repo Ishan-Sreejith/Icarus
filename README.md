@@ -14,6 +14,13 @@ What makes it useful
 - Modular by default: components can be forged, refined, and reused.
 - Unsafe / low-level: mark blocks as `unsafe` when you need raw access (memory, syscalls, sockets) without sprinkling the rest of your code with caveats.
 
+The language consists of multiple components such as:
+ 1. CoRe: The syntax formatter which is automatically installed when the binary is installed from github.
+ 2. Icarus (previously built in FrameForge):  This is the main program, which converts Icarus code into Assembly, Rust, binary or executables. 
+ 3.Apollo: This is the package manager which is responsible for all the plugins and extensions. Apollo also manages the link between Icarus and some of my other projects which are built on this.
+
+
+
 Quick start
 
 - Install: `./forge install`
