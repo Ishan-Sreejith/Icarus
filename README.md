@@ -5,7 +5,7 @@ Icarus is a lean, colon-driven language built for modularity and performance.
 
 Live demo
 
-- https://ishan-sreejith.github.io/FrameForge/ (served from the `deploy/` folder)
+- https://ishan-sreejith.github.io/Icarus/ (served from the `deploy/` folder)
 
 What makes it useful
 
